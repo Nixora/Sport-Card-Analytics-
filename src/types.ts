@@ -1,4 +1,4 @@
-export interface Card {
+export interface TradingCard {
   cardName: string;
   gradingCompany: string;
   grade: number;
@@ -17,4 +17,4 @@ export interface TransformedCard {
   peakDay: string;
 }
 
-export interface ApiResponse extends Array<Card> {}
+export interface ApiResponse extends Array<TradingCard> {}

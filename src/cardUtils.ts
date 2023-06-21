@@ -1,7 +1,7 @@
-import { Card, TransformedCard } from "./types";
+import { TradingCard, TransformedCard } from "./types";
 
-export function groupByCardName(cards: Card[]): TransformedCard[] {
-  const groupedCards: Record<string, Card[]> = {};
+export function groupByCardName(cards: TradingCard[]): TransformedCard[] {
+  const groupedCards: Record<string, TradingCard[]> = {};
 
   cards.forEach((card) => {
     if (groupedCards.hasOwnProperty(card.cardName)) {
@@ -57,7 +57,7 @@ function calculateStandardDeviation(prices: number[]): number {
   return Math.sqrt(variance);
 }
 
-function findPeakPriceAndDay(cards: Card[]): {
+function findPeakPriceAndDay(cards: TradingCard[]): {
   peakPrice: number;
   peakDay: string;
 } {
