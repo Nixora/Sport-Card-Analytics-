@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { Card, ApiResponse } from './types';
+import { groupByCardName } from './cardUtils';
 
 function App() {
   const [data, setData] = useState<Card[] | null>(null);
+  const [groupedCards, setGroupedCards] = useState<any[] | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,13 +20,21 @@ function App() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (data) {
+      const groupedData = groupByCardName(data);
+      setGroupedCards(groupedData);
+    }
+  }, [data]);
+
   if (!data) {
-    return <div>Loading...</div>; 
+    return <div>Loading...</div>; // or display a loading indicator
   }
+console.log(groupedCards)
 
   return (
     <div>
-      {/* Render your components or use the data */}
+
     </div>
   );
 }
