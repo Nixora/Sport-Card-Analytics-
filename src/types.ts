@@ -17,4 +17,8 @@ export interface TransformedCard {
   peakDay: string;
 }
 
+export interface CardGridProps {
+  groupedData: TransformedCard[];
+}
+
 export interface ApiResponse extends Array<TradingCard> {}
