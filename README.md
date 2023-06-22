@@ -20,7 +20,7 @@ This app displays Cards from this [api](https://mocki.io/v1/70f45519-0232-463b-b
 
 ## Setup
 - download or clone the repository
-- navigate to the project directory: `cd my-react-app`
+- navigate to the project directory: `cd sports-trading-cards-app-magpie`
 - run `npm install`
 - to start the development server and run the app locally, use the following command: `npm start`
   
