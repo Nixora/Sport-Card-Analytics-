@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.4.0",
     "csv-writer": "^1.6.0",
+    "firebase": "^9.22.2",
     "json2csv": "^6.0.0-alpha.2",
     "react": "^18.2.0",
     "react-csv": "^2.2.2",
