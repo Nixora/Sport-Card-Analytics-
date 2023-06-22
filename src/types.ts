@@ -21,4 +21,10 @@ export interface CardGridProps {
   groupedData: TransformedCard[];
 }
 
+export interface AppBarProps {
+  darkMode: boolean;
+  toggleDarkMode: () => void;
+  handleDownload: (format: string) => void;
+}
+
 export interface ApiResponse extends Array<TradingCard> {}

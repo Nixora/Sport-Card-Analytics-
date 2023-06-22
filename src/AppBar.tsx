@@ -1,20 +1,28 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Switch, IconButton, Menu, MenuItem } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Switch,
+  IconButton,
+  Menu,
+  MenuItem,
+} from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import { SaveAlt as SaveAltIcon } from '@mui/icons-material';
+import { AppBarProps } from './types';
 
-interface AppBarProps {
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-  handleDownload: (format: string) => void;
-}
 
-const CustomAppBar: React.FC<AppBarProps> = ({ darkMode, toggleDarkMode, handleDownload }) => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+const CustomAppBar: React.FC<AppBarProps> = ({
+  darkMode,
+  toggleDarkMode,
+  handleDownload,
+}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const handleClick = (event: any) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -36,14 +44,15 @@ const CustomAppBar: React.FC<AppBarProps> = ({ darkMode, toggleDarkMode, handleD
       }}
     >
       <Toolbar>
-        <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontFamily: 'Neometric, sans-serif' }}>
-          <span style={{ marginRight: '8px' }}>MAGPIE Trading Cards</span>
+        <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+          <Typography variant="h5" component="div" sx={{ fontFamily: 'Neometric, sans-serif' }}>
+            <span style={{ marginRight: '8px' }}>MAGPIE Trading Cards</span>
+          </Typography>
           <IconButton
             color="inherit"
             onClick={handleClick}
             aria-controls="download-menu"
             aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
           >
             <SaveAltIcon />
           </IconButton>
@@ -60,10 +69,12 @@ const CustomAppBar: React.FC<AppBarProps> = ({ darkMode, toggleDarkMode, handleD
             <MenuItem onClick={() => handleDownloadOption('csv')}>Download as CSV</MenuItem>
             <MenuItem onClick={() => handleDownloadOption('xlsx')}>Download as XLSX</MenuItem>
           </Menu>
-        </Typography>
-        <WbSunnyIcon sx={{ marginRight: '8px' }} />
-        <Switch checked={darkMode} onChange={toggleDarkMode} color="default" />
-        <Brightness4Icon sx={{ marginLeft: '8px' }} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <WbSunnyIcon sx={{ marginRight: '8px' }} />
+          <Switch checked={darkMode} onChange={toggleDarkMode} color="default" />
+          <Brightness4Icon sx={{ marginLeft: '8px' }} />
+        </div>
       </Toolbar>
     </AppBar>
   );
