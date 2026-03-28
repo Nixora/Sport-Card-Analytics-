@@ -17,13 +17,11 @@ This app displays Cards from this [api](https://mocki.io/v1/70f45519-0232-463b-b
 - Displays the collated data in a readable format for the user. (React UI)
 - Provides a React UI for the user to download the transformed data in their choice of the following formats: JSON, CSV, or .xlsx.
 
-
 ## Setup
 - download or clone the repository
 - navigate to the project directory: `cd sports-trading-cards-app-magpie`
 - run `npm install`
 - to start the development server and run the app locally, use the following command: `npm start`
   
-
 ## Credits
 - Luis Mario Trujillo Aguilar
