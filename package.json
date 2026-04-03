@@ -1,55 +1,19 @@
 {
-  "name": "sports-trading-cards-app-magpie",
-  "version": "0.1.0",
+  "name": "sports-card-analytics",
   "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.13.5",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.4.0",
-    "csv-writer": "^1.6.0",
-    "firebase": "^9.22.2",
-    "json2csv": "^6.0.0-alpha.2",
-    "react": "^18.2.0",
-    "react-csv": "^2.2.2",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "stream-browserify": "^3.0.0",
-    "typescript": "^5.1.3",
-    "web-vitals": "^2.1.4",
-    "xlsx": "^0.18.5",
-    "xlsx-populate": "^1.21.0"
-  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "dev:api": "npm run dev --prefix server",
+    "vps:dev": "npm run dev --prefix server",
+    "dev:web": "npm run dev --prefix client",
+    "preview:web": "npm run preview --prefix client",
+    "start:api": "npm start --prefix server",
+    "build:web": "npm run build --prefix client",
+    "build": "npm run build:web",
+    "start:prod": "cross-env NODE_ENV=production npm start --prefix server",
+    "prod:vps": "npm run build:web && cross-env NODE_ENV=production npm start --prefix server"
   },
   "devDependencies": {
-    "webpack": "^5.87.0",
-    "webpack-cli": "^5.1.4"
+    "cross-env": "^10.1.0"
   }
 }
