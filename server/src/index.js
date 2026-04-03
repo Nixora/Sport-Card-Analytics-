@@ -13,7 +13,18 @@ const { closeDb } = require("./db");
 const app = express();
 app.set("trust proxy", 1);
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    // Helmet defaults include upgrade-insecure-requests, which rewrites http:// page
+    // assets to https:// and breaks plain-HTTP VPS installs (no TLS on :5000).
+    contentSecurityPolicy: {
+      directives: {
+        upgradeInsecureRequests: null,
+      },
+    },
+  })
+);
 const isProd = config.nodeEnv === "production";
 app.use(
   cors({
