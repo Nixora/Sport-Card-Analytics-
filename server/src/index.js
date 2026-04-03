@@ -21,6 +21,8 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         upgradeInsecureRequests: null,
+        // Default Helmet img-src is 'self' data: — marketplace card photos are hotlinked HTTPS URLs.
+        imgSrc: ["'self'", "data:", "https:", "http:"],
       },
     },
   })
