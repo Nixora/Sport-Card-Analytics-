@@ -1,2 +1,6 @@
 pymongo>=4.6
 requests>=2.31
+# scripts/enrich_cards_vinted.py (Vinted Selenium enrichment)
+beautifulsoup4>=4.12
+selenium>=4.15
+webdriver-manager>=4.0

@@ -5,22 +5,25 @@ Check eBay API rate limit and usage for Browse API only (sport card search).
 - GET /user_rate_limit/  — user-level (EBAY_REFRESH_TOKEN)
 
 Filtered to api_name=browse, api_context=buy (same as scrapers).
-Uses same .env as scrape_vinted.py (server/.env or .env).
+Uses same env files as ingest_ebay.py: first of server/.env, .env (does not override existing os.environ).
 Run: python check_ebay_usage.py
 """
 
-import os
 import base64
+import os
 
 import requests
 
 
 def _load_env_from_dotenv() -> str | None:
-    """Load env from server/.env or .env (same as scrape_vinted.py). Returns path used or None."""
+    """Same as ingest_ebay.py: server/.env then .env; stop after first file found. Returns path used or None."""
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    for path in [
+    candidate_paths = [
+        os.path.join(base_dir, "server", ".env"),
         os.path.join(base_dir, ".env"),
-    ]:
+    ]
+    loaded: str | None = None
+    for path in candidate_paths:
         if not os.path.exists(path):
             continue
         try:
@@ -36,10 +39,11 @@ def _load_env_from_dotenv() -> str | None:
                         value = value[1:-1]
                     if key and key not in os.environ:
                         os.environ[key] = value
-        except Exception as e:
-            print(f"Warning: could not load {path}: {e}")
-        return path
-    return None
+        except OSError as e:
+            print(f"Warning: could not load env file {path}: {e}")
+        loaded = path
+        break
+    return loaded
 
 
 _env_file = _load_env_from_dotenv()
@@ -180,7 +184,10 @@ def main() -> None:
     # 1) Token from OAuth client_credentials (same as scrapers)
     try:
         app_token = get_app_token()
-        print("\nToken (OAuth client_credentials, same as scrapers):", app_token)
+        print(
+            "\nToken (OAuth client_credentials, same as scrapers): obtained OK "
+            f"(length {len(app_token)}, not printed — avoid leaking credentials in logs)"
+        )
         app_data = fetch_rate_limit(RATE_LIMIT_URL, app_token, params=BROWSE_PARAMS)
         print_usage("Application rate_limit/ (client credentials)", app_data)
     except Exception as e:
