@@ -32,7 +32,11 @@ module.exports = {
   mongoUri: req("MONGODB_URI", "mongodb://localhost:27017"),
   mongoDb: req("MONGODB_DB", "sports_cards"),
   ebayItemsCollection: req("MONGODB_COLLECTION", "ebay_items"),
-  cardsCollection: req("MONGODB_CARDS_COLLECTION", "cards"),
+  /**
+   * @deprecated db is single-collection now; card docs also live in ebayItemsCollection
+   * Kept for backward compatibility with older code paths / envs.
+   */
+  cardsCollection: req("MONGODB_COLLECTION", "ebay_items"),
   /** @deprecated use clientOrigins */
   clientOrigin: clientOrigins[0] || "http://localhost:5173",
   clientOrigins,

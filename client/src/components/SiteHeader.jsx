@@ -66,6 +66,7 @@ function BurgerIcon({ open }) {
 }
 
 const marketplaceActive = ({ pathname }) =>
+  pathname === "/marketplace" ||
   pathname === "/marketplace-comparison" ||
   pathname.startsWith("/cards/") ||
   pathname.startsWith("/analytics/");
@@ -137,14 +138,14 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
 
         <nav className="site-header__nix-nav" aria-label="Main">
           <NavLink
-            to="/marketplace-comparison"
+            to="/marketplace"
             className={navClass}
             isActive={marketplaceActive}
           >
             Marketplace
           </NavLink>
-          <NavLink to="/alerts" className={navClass}>
-            Alerts
+          <NavLink to="/comparison-alert" className={navClass}>
+            Comparison and Alert
           </NavLink>
           <NavLink to="/premium" className={navClass}>
             Premium
@@ -156,7 +157,7 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
 
         <div className="site-header__nix-util">
           <Link
-            to="/marketplace-comparison"
+            to="/marketplace"
             className="site-header__icon-btn"
             aria-label="Search marketplace"
           >
@@ -193,7 +194,7 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           <div id="site-header-drawer" className="site-header__drawer" role="dialog" aria-modal="true">
             <nav className="site-header__drawer-nav" aria-label="Mobile">
               <NavLink
-                to="/marketplace-comparison"
+                to="/marketplace"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
                 isActive={marketplaceActive}
@@ -201,11 +202,11 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                 Marketplace
               </NavLink>
               <NavLink
-                to="/alerts"
+                to="/comparison-alert"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Alerts
+                Comparison and Alert
               </NavLink>
               <NavLink
                 to="/premium"

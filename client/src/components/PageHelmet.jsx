@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 
 const SITE = "Nixsor";
 
-/** Home: `title · Nixsor`. Other routes: `home / breadcrumb · Nixsor` (breadcrumb = path-style segments, e.g. `marketplace-comparison` or `marketplace-comparison / card-key`). */
+/** Home: `title · Nixsor`. Other routes: `home / breadcrumb · Nixsor` (breadcrumb = path-style segments, e.g. `marketplace` or `marketplace / card-key`). */
 export default function PageHelmet({ title, description, isHome, breadcrumb }) {
   let fullTitle = SITE;
   if (isHome) {

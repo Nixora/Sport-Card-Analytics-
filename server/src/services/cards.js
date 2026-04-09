@@ -7,10 +7,121 @@ const SORT_API = {
   price: "trend_last_price",
 };
 
+// Title-based filters (ingest flags can miss "PSA10"/"BGS9.5" formats).
+const AUTOGRAPH_TITLE_RE = /\b(auto(graph)?|signed)\b/i;
+const GRADE_AUTH_TITLE_RE =
+  /\b(psa\s*[-#:]?\s*\d{1,2}(\.\d)?|psa\d{1,2}|bgs\s*[-#:]?\s*\d{1,2}(\.\d)?|bgs\d{1,2}(\.\d)?|bvg\s*\d{1,2}(\.\d)?|jsa|beckett|coa)\b/i;
+
+function listingDocQuery(extra = {}) {
+  // Ingest (scripts/ingest_ebay.py) stores item docs in a single collection.
+  // Back-compat: if any doc_type exists, treat non-card docs as listings.
+  return {
+    $and: [{ $or: [{ doc_type: { $exists: false } }, { doc_type: "listing" }] }, extra].filter(
+      Boolean
+    ),
+  };
+}
+
+function buildListingFilterFromQuery(q) {
+  const and = [];
+
+  if (q.compareOnly === "true") {
+    and.push({
+      $or: [
+        { compare_vinted: { $exists: true, $ne: null } },
+        { compare_catawiki: { $exists: true, $ne: null } },
+      ],
+    });
+  }
+
+  if (q.autograph === "true") {
+    and.push({
+      $or: [
+        { has_autograph: true },
+        { "keyword_flags.has_signed": true },
+        { "keyword_flags.has_auto": true },
+        { title: { $regex: AUTOGRAPH_TITLE_RE } },
+      ],
+    });
+  }
+
+  if (q.graded === "true") {
+    and.push({
+      $or: [
+        { has_grade_or_auth: true },
+        { "keyword_flags.has_psa": true },
+        { "keyword_flags.has_bgs": true },
+        { "keyword_flags.has_jsa": true },
+        { "keyword_flags.has_beckett": true },
+        { "keyword_flags.has_coa": true },
+        { title: { $regex: GRADE_AUTH_TITLE_RE } },
+      ],
+    });
+  }
+
+  if (q.psa === "true") {
+    and.push({
+      $or: [
+        { "keyword_flags.has_psa": true },
+        { title: { $regex: /\bpsa\s*[-#:]?\s*\d{1,2}(\.\d)?\b/i } },
+        { title: { $regex: /\bpsa\d{1,2}\b/i } },
+      ],
+    });
+  }
+
+  if (q.bgs === "true") {
+    and.push({
+      $or: [
+        { "keyword_flags.has_bgs": true },
+        { title: { $regex: /\bbgs\s*[-#:]?\s*\d{1,2}(\.\d)?\b/i } },
+        { title: { $regex: /\bbgs\d{1,2}(\.\d)?\b/i } },
+      ],
+    });
+  }
+
+  return and.length ? { $and: and } : {};
+}
+
+function toNum(v) {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function median(nums) {
+  const arr = (nums || []).map(toNum).filter((n) => n != null).sort((a, b) => a - b);
+  const n = arr.length;
+  if (!n) return null;
+  const mid = Math.floor(n / 2);
+  if (n % 2 === 1) return arr[mid];
+  return (arr[mid - 1] + arr[mid]) / 2;
+}
+
+function normalizeCardTrendFromItemTrend(trendPriceRows) {
+  // trendPriceRows: [{date, prices:[...], currency}]
+  const out = [];
+  for (const row of trendPriceRows || []) {
+    const p = median(row.prices || []);
+    if (p == null) continue;
+    out.push({
+      date: row.date,
+      price: p,
+      count: (row.prices || []).map(toNum).filter((n) => n != null).length,
+      price_currency: row.currency || null,
+    });
+  }
+  out.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  return out;
+}
+
 function defaultPreview() {
   return {
     preview_image_url: null,
     preview_listing_url: null,
+    preview_condition: null,
+    compare_vinted: null,
+    compare_catawiki: null,
+    compare_updated_at: null,
     seller_username: null,
     seller_feedback_percentage: null,
     seller_feedback_score: null,
@@ -44,14 +155,19 @@ async function fetchPreviewsForKeys(db, keySet) {
   const items = db.collection(config.ebayItemsCollection);
   const rows = await items
     .find(
-      {},
+      listingDocQuery({}),
       {
         sort: { fetched_at: -1 },
         limit: 8000,
         projection: {
+          card_key: 1,
           title: 1,
           image_url: 1,
           item_web_url: 1,
+          condition: 1,
+          compare_vinted: 1,
+          compare_catawiki: 1,
+          compare_updated_at: 1,
           seller_username: 1,
           seller_feedback_percentage: 1,
           seller_feedback_score: 1,
@@ -67,11 +183,15 @@ async function fetchPreviewsForKeys(db, keySet) {
     .toArray();
 
   for (const row of rows) {
-    const key = cardKeyFromTitle(row.title);
+    const key = row.card_key || cardKeyFromTitle(row.title);
     if (!key || !keySet.has(key) || out.has(key)) continue;
     out.set(key, {
       preview_image_url: row.image_url || null,
       preview_listing_url: row.item_web_url || null,
+      preview_condition: row.condition ?? null,
+      compare_vinted: row.compare_vinted || null,
+      compare_catawiki: row.compare_catawiki || null,
+      compare_updated_at: row.compare_updated_at || null,
       seller_username: row.seller_username || null,
       seller_feedback_percentage: toNumberOrNull(
         row.seller_feedback_percentage ?? row.seller_feedback_percentag
@@ -129,10 +249,12 @@ async function cardKeysMatchingListings(db, filters) {
   if (Object.keys(q).length === 0) return null;
 
   const items = db.collection(config.ebayItemsCollection);
-  const cursor = items.find(q, { projection: { title: 1 } }).limit(5000);
+  const cursor = items
+    .find(listingDocQuery(q), { projection: { card_key: 1, title: 1 } })
+    .limit(5000);
   const keys = new Set();
   for await (const doc of cursor) {
-    const k = cardKeyFromTitle(doc.title);
+    const k = doc.card_key || cardKeyFromTitle(doc.title);
     if (k) keys.add(k);
   }
   return keys;
@@ -149,67 +271,75 @@ async function listCards(db, query) {
   const sortField = SORT_API[sortApi];
   const order = query.order === "asc" ? 1 : -1;
 
-  let allowedKeys = await cardKeysMatchingListings(db, query);
-  const match = {};
-  if (allowedKeys && allowedKeys.size === 0) {
-    return { items: [], total: 0, page, limit };
-  }
-  if (allowedKeys) match.card_key = { $in: [...allowedKeys] };
+  const match = buildListingFilterFromQuery(query);
 
-  const cards = db.collection(config.cardsCollection);
+  const items = db.collection(config.ebayItemsCollection);
 
   const pipeline = [
-    { $match: match },
+    { $match: listingDocQuery({ ...match, card_key: { $exists: true, $ne: null } }) },
+    { $project: { card_key: 1, title: 1, price_currency: 1, first_seen_at: 1, last_seen_at: 1, trend: 1 } },
+    { $unwind: { path: "$trend", preserveNullAndEmptyArrays: false } },
     {
-      $unwind: {
-        path: "$trend",
-        preserveNullAndEmptyArrays: true,
+      $group: {
+        _id: { card_key: "$card_key", date: "$trend.date" },
+        card_key: { $last: "$card_key" },
+        date: { $last: "$trend.date" },
+        title: { $last: "$title" },
+        price_currency: { $last: "$trend.price_currency" },
+        first_seen_at: { $min: "$first_seen_at" },
+        last_seen_at: { $max: "$last_seen_at" },
+        prices: { $push: "$trend.price_value" },
       },
     },
-    { $sort: { card_key: 1, "trend.date": 1 } },
+    {
+      $addFields: {
+        day_count: { $size: "$prices" },
+        // Used for DB-level sorting only. Display still uses median in JS post-processing.
+        day_price_sort: {
+          $avg: {
+            $map: {
+              input: "$prices",
+              as: "p",
+              in: {
+                $convert: {
+                  input: "$$p",
+                  to: "double",
+                  onError: null,
+                  onNull: null,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    { $sort: { card_key: 1, date: 1 } },
     {
       $group: {
         _id: "$card_key",
+        card_key: { $last: "$card_key" },
         title: { $last: "$title" },
         price_currency: { $last: "$price_currency" },
         first_seen_at: { $last: "$first_seen_at" },
         last_seen_at: { $last: "$last_seen_at" },
-        trend: {
-          $push: "$trend",
-        },
-        trend_last: { $last: "$trend" },
+        trend_prices: { $push: { date: "$date", prices: "$prices", currency: "$price_currency" } },
+        trend_sort: { $push: { date: "$date", count: "$day_count", price: "$day_price_sort" } },
       },
     },
     {
       $addFields: {
-        trend: {
-          $filter: {
-            input: "$trend",
-            as: "t",
-            cond: { $ne: ["$$t", null] },
-          },
-        },
+        latest_sort: { $arrayElemAt: ["$trend_sort", -1] },
       },
     },
     {
       $addFields: {
-        card_key: "$_id",
+        // DB-level sort keys (client display uses JS median/count for latest_trend)
+        trend_last_count: { $ifNull: ["$latest_sort.count", 0] },
+        trend_last_price: { $ifNull: ["$latest_sort.price", 0] },
       },
     },
-    {
-      $addFields: {
-        trend_last_price: {
-          $convert: {
-            input: "$trend_last.price",
-            to: "double",
-            onError: 0,
-            onNull: 0,
-          },
-        },
-        trend_last_count: { $ifNull: ["$trend_last.count", 0] },
-      },
-    },
-    { $sort: { [sortField]: order } },
+    // Deterministic sorting: break ties by card_key so refresh doesn't reshuffle.
+    { $sort: { [sortField]: order, card_key: 1 } },
     {
       $facet: {
         metadata: [{ $count: "total" }],
@@ -223,9 +353,9 @@ async function listCards(db, query) {
               price_currency: 1,
               first_seen_at: 1,
               last_seen_at: 1,
-              trend: 1,
               trend_last_price: 1,
               trend_last_count: 1,
+              trend_prices: 1,
             },
           },
         ],
@@ -233,12 +363,13 @@ async function listCards(db, query) {
     },
   ];
 
-  const agg = await cards.aggregate(pipeline).toArray();
+  const agg = await items.aggregate(pipeline).toArray();
   const facet = agg[0] || { data: [], metadata: [] };
   const total = facet.metadata[0]?.total ?? 0;
-  let items = (facet.data || []).map((c) => {
-    const last = latestTrend(c.trend);
-    const prev7 = last ? trendPointDaysAgo(c.trend, last.date, 7) : null;
+  let itemsOut = (facet.data || []).map((c) => {
+    const trend = normalizeCardTrendFromItemTrend(c.trend_prices || []);
+    const last = latestTrend(trend);
+    const prev7 = last ? trendPointDaysAgo(trend, last.date, 7) : null;
     let change7dPct = null;
     if (
       last &&
@@ -261,9 +392,9 @@ async function listCards(db, query) {
     };
   });
 
-  items = await mergePreviewFields(db, items);
+  itemsOut = await mergePreviewFields(db, itemsOut);
 
-  return { items, total, page, limit };
+  return { items: itemsOut, total, page, limit };
 }
 
 async function mergePreviewFields(db, items) {
@@ -278,22 +409,72 @@ async function mergePreviewFields(db, items) {
 
 async function getCardByKey(db, cardKey) {
   if (!cardKey) return null;
-  const cards = db.collection(config.cardsCollection);
-  const doc = await cards.findOne({ card_key: cardKey });
+  const items = db.collection(config.ebayItemsCollection);
+
+  const latestListing = await items.findOne(listingDocQuery({ card_key: cardKey }), {
+    sort: { fetched_at: -1 },
+    projection: {
+      additional_image_urls: 1,
+      buying_options: 1,
+      categories: 1,
+      fetched_at: 1,
+    },
+  });
+
+  const pipeline = [
+    { $match: listingDocQuery({ card_key: cardKey }) },
+    { $project: { card_key: 1, title: 1, price_currency: 1, first_seen_at: 1, last_seen_at: 1, trend: 1 } },
+    { $unwind: { path: "$trend", preserveNullAndEmptyArrays: false } },
+    {
+      $group: {
+        _id: { date: "$trend.date" },
+        date: { $last: "$trend.date" },
+        title: { $last: "$title" },
+        price_currency: { $last: "$trend.price_currency" },
+        first_seen_at: { $min: "$first_seen_at" },
+        last_seen_at: { $max: "$last_seen_at" },
+        prices: { $push: "$trend.price_value" },
+      },
+    },
+    { $sort: { date: 1 } },
+    {
+      $group: {
+        _id: cardKey,
+        card_key: { $last: cardKey },
+        title: { $last: "$title" },
+        price_currency: { $last: "$price_currency" },
+        first_seen_at: { $last: "$first_seen_at" },
+        last_seen_at: { $last: "$last_seen_at" },
+        trend_prices: { $push: { date: "$date", prices: "$prices", currency: "$price_currency" } },
+      },
+    },
+  ];
+
+  const rows = await items.aggregate(pipeline).toArray();
+  const doc = rows[0];
   if (!doc) return null;
-  const last = latestTrend(doc.trend);
+  const trend = normalizeCardTrendFromItemTrend(doc.trend_prices || []);
+  const last = latestTrend(trend);
   const previews = await fetchPreviewsForKeys(db, new Set([cardKey]));
   const preview = previews.get(cardKey) || defaultPreview();
   return {
-    card_key: doc.card_key,
+    card_key: cardKey,
     title: doc.title,
     price_currency: doc.price_currency,
     first_seen_at: doc.first_seen_at,
     last_seen_at: doc.last_seen_at,
-    trend: doc.trend || [],
+    trend,
     latest_trend: last,
     preview_listing_url: preview.preview_listing_url,
     preview_image_url: preview.preview_image_url,
+    seller_username: preview.seller_username || null,
+    seller_feedback_percentage: preview.seller_feedback_percentage ?? null,
+    seller_feedback_score: preview.seller_feedback_score ?? null,
+    compare_vinted: preview.compare_vinted || null,
+    compare_catawiki: preview.compare_catawiki || null,
+    additional_image_urls: latestListing?.additional_image_urls || [],
+    buying_options: latestListing?.buying_options || [],
+    categories: latestListing?.categories || [],
     all_data: doc,
     disclaimer: config.disclaimerAskingSample,
   };
@@ -302,11 +483,9 @@ async function getCardByKey(db, cardKey) {
 async function listingsForCard(db, cardKey, lim = 20) {
   const limit = Math.min(100, Math.max(1, lim));
   const items = db.collection(config.ebayItemsCollection);
-  const recent = await items
-    .find({}, { sort: { fetched_at: -1 }, limit: 2000 })
+  return items
+    .find(listingDocQuery({ card_key: cardKey }), { sort: { fetched_at: -1 }, limit })
     .toArray();
-  const matched = recent.filter((d) => cardKeyFromTitle(d.title) === cardKey);
-  return matched.slice(0, limit);
 }
 
 module.exports = {

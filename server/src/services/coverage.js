@@ -1,11 +1,19 @@
 const config = require("../config");
 
+function listingDocQuery(extra = {}) {
+  return {
+    $and: [
+      { $or: [{ doc_type: { $exists: false } }, { doc_type: "listing" }] },
+      extra,
+    ].filter(Boolean),
+  };
+}
+
 /**
  * @param {import('mongodb').Db} db
  */
 async function getCoverage(db) {
   const items = db.collection(config.ebayItemsCollection);
-  const cards = db.collection(config.cardsCollection);
 
   const now = new Date();
   const startUtc = new Date(
@@ -22,10 +30,13 @@ async function getCoverage(db) {
 
   const [cardCount, listingsToday, lastListing, lastCardUpdate] =
     await Promise.all([
-      cards.estimatedDocumentCount(),
-      items.countDocuments({ fetched_at: { $gte: startUtc } }),
-      items.findOne({}, { sort: { fetched_at: -1 }, projection: { fetched_at: 1 } }),
-      cards.findOne({}, { sort: { last_seen_at: -1 }, projection: { last_seen_at: 1 } }),
+      items.distinct("card_key", listingDocQuery({ card_key: { $exists: true, $ne: null } })).then((a) => a.length),
+      items.countDocuments(listingDocQuery({ fetched_at: { $gte: startUtc } })),
+      items.findOne(listingDocQuery({}), {
+        sort: { fetched_at: -1 },
+        projection: { fetched_at: 1 },
+      }),
+      items.findOne(listingDocQuery({}), { sort: { last_seen_at: -1 }, projection: { last_seen_at: 1 } }),
     ]);
 
   return {

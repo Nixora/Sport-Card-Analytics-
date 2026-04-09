@@ -34,20 +34,20 @@ export default function App() {
   const { pathname } = useLocation();
   const isHome = pathname === "/";
   const normalizedPath =
-    pathname === "/cards" ? "/marketplace-comparison" : pathname;
+    pathname === "/cards" ? "/marketplace" : pathname;
   const showBodyPath = normalizedPath !== "/";
   let bodyPathLabel = "";
   if (normalizedPath.startsWith("/cards/")) {
     const cardKey = decodeURIComponent(normalizedPath.replace("/cards/", ""));
-    bodyPathLabel = `home / marketplace-comparison / ${cardKey}`;
+    bodyPathLabel = `home / marketplace / ${cardKey}`;
   } else if (normalizedPath.startsWith("/analytics/")) {
     const cardKey = decodeURIComponent(normalizedPath.replace("/analytics/", ""));
-    bodyPathLabel = `home / marketplace-comparison / ${cardKey}`;
+    bodyPathLabel = `home / marketplace / ${cardKey}`;
   } else {
     bodyPathLabel = `home / ${normalizedPath.replace(/^\//, "")}`;
   }
 
-  const marketplaceListRoute = normalizedPath === "/marketplace-comparison";
+  const marketplaceListRoute = normalizedPath === "/marketplace";
 
   return (
     <div ref={layoutRef} className="layout">
@@ -59,12 +59,14 @@ export default function App() {
           {showBodyPath && <p className="body-path-label">{bodyPathLabel}</p>}
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/marketplace-comparison" element={<Cards />} />
-            <Route path="/cards" element={<Navigate to="/marketplace-comparison" replace />} />
+            <Route path="/marketplace" element={<Cards />} />
+            <Route path="/marketplace-comparison" element={<Navigate to="/marketplace" replace />} />
+            <Route path="/cards" element={<Navigate to="/marketplace" replace />} />
             <Route path="/cards/:cardKey" element={<CardDetail />} />
-            <Route path="/analytics" element={<Navigate to="/marketplace-comparison" replace />} />
+            <Route path="/analytics" element={<Navigate to="/marketplace" replace />} />
             <Route path="/analytics/:cardKey" element={<RedirectAnalyticsToCard />} />
-            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/comparison-alert" element={<Alerts />} />
+            <Route path="/alerts" element={<Navigate to="/comparison-alert" replace />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/community" element={<Community />} />
           </Routes>

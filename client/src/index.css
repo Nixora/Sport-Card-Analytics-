@@ -778,7 +778,7 @@ a:hover {
 
 .card-detail-top-flags {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem 2rem;
   margin: 0 0 1.15rem;
   padding: 1rem 0 0;
@@ -850,6 +850,23 @@ a:hover {
   display: block;
 }
 
+.card-detail-trend-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.card-detail-trend-grid__col {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .card-detail-trend-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card-detail-stat-line {
   display: flex;
   flex-wrap: wrap;
@@ -913,6 +930,7 @@ a:hover {
   background: rgba(30, 100, 168, 0.35);
   border: 1px solid rgba(120, 190, 255, 0.35);
   transition: background 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
 }
 
 .card-detail-nav__back:hover {
@@ -1147,6 +1165,24 @@ a:hover {
   margin: 0.15rem 0 0;
   font-size: 0.92rem;
   color: #e4eef9;
+  overflow-wrap: anywhere;
+}
+
+.card-detail-meta__pills {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.2rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card-detail-meta__pills::-webkit-scrollbar {
+  height: 6px;
+}
+
+.card-detail-meta__pills::-webkit-scrollbar-thumb {
+  background: rgba(159, 212, 255, 0.35);
+  border-radius: 999px;
 }
 
 .card-detail-panel {
@@ -2348,79 +2384,43 @@ a:hover {
 }
 
 .home-why-carousel__banner {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  min-height: 400px;
+  position: relative;
+  padding: 1.65rem 1.8rem 1.8rem;
+  min-height: 420px;
   border-radius: 24px;
   overflow: hidden;
   box-shadow:
     0 22px 56px rgba(6, 4, 20, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.06);
+  background:
+    radial-gradient(900px 380px at 25% 20%, rgba(46, 26, 71, 0.88) 0%, rgba(12, 22, 40, 0) 60%),
+    linear-gradient(135deg, rgba(23, 55, 90, 0.9) 0%, rgba(10, 18, 32, 0.95) 50%, rgba(46, 26, 71, 0.75) 100%);
 }
 
-.home-why-carousel__media {
-  flex: 0 0 42%;
-  max-width: 42%;
-  min-height: 360px;
-  background: #0f0a1a;
-  overflow: hidden;
-}
-
-.home-why-carousel__img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 360px;
-  object-fit: cover;
-  object-position: center;
-  animation: homeWhyImgIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-  will-change: opacity, transform;
-}
-
-.home-why-carousel__panel {
-  flex: 1;
-  min-width: 0;
-  padding: 2.35rem 2.6rem 2.5rem 2.35rem;
+.home-why-carousel__copy {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 0.85rem;
-  background: linear-gradient(90deg, #2e1a47 0%, #e13022 58%, #f9a21b 100%);
-  background-size: 120% 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
   color: #ffffff;
-  animation: homeWhyPanelGradient 12s ease-in-out infinite alternate;
 }
 
-@keyframes homeWhyPanelGradient {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 100% 50%;
-  }
-}
-
-.home-why-carousel__panel-inner {
-  display: flex;
-  flex-direction: column;
-  gap: inherit;
-}
-
-.home-why-carousel__panel-inner .anim-line {
+.home-why-carousel__copy .anim-line {
   animation: homeWhyLineIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity, transform;
 }
 
-.home-why-carousel__panel-inner .anim-line--delay-1 {
+.home-why-carousel__copy .anim-line--delay-1 {
   animation-delay: 0.08s;
 }
 
-.home-why-carousel__panel-inner .anim-line--delay-2 {
+.home-why-carousel__copy .anim-line--delay-2 {
   animation-delay: 0.16s;
 }
 
-.home-why-carousel__panel-inner .anim-line--delay-3 {
+.home-why-carousel__copy .anim-line--delay-3 {
   animation-delay: 0.24s;
 }
 
@@ -2443,7 +2443,7 @@ a:hover {
 
 .home-why-carousel__body {
   margin: 0;
-  max-width: 38rem;
+  max-width: 52rem;
   font-size: 1.05rem;
   line-height: 1.58;
   font-weight: 500;
@@ -2451,7 +2451,7 @@ a:hover {
 }
 
 .home-why-carousel__cta {
-  align-self: flex-start;
+  align-self: center;
   margin-top: 0.45rem;
   display: inline-flex;
   align-items: center;
@@ -2481,6 +2481,71 @@ a:hover {
   font-size: 1.1em;
   line-height: 1;
   translate: 0 0.02em;
+}
+
+.home-why-carousel__stage {
+  position: relative;
+  margin: 1.25rem auto 0;
+  height: 260px;
+  max-width: 980px;
+}
+
+.home-why-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(520px, 76vw);
+  height: 240px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.home-why-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.home-why-card.is-active {
+  z-index: 3;
+  transform: translate(-50%, -50%) scale(1);
+  filter: blur(0);
+  opacity: 1;
+}
+
+.home-why-card.is-left {
+  z-index: 2;
+  transform: translate(calc(-50% - 255px), -50%) scale(0.78);
+  filter: blur(3px) saturate(0.85);
+  opacity: 0.8;
+}
+
+.home-why-card.is-right {
+  z-index: 2;
+  transform: translate(calc(-50% + 255px), -50%) scale(0.78);
+  filter: blur(3px) saturate(0.85);
+  opacity: 0.8;
+}
+
+.home-why-card.is-hidden {
+  z-index: 1;
+  transform: translate(-50%, -50%) scale(0.78);
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(4px);
 }
 
 .home-why-carousel__nav {
@@ -2555,14 +2620,9 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-why-carousel__img,
-  .home-why-carousel__panel-inner .anim-line {
+  .home-why-carousel__copy .anim-line,
+  .home-why-card {
     animation: none !important;
-  }
-
-  .home-why-carousel__panel {
-    animation: none;
-    background-size: 100% 100%;
   }
 
   .home-why-carousel__cta:hover .home-why-carousel__cta-chev {
@@ -2580,26 +2640,26 @@ a:hover {
 
 @media (max-width: 720px) {
   .home-why-carousel__banner {
-    flex-direction: column;
-    min-height: 0;
+    padding: 1.35rem 1.15rem 1.25rem;
+    min-height: 420px;
     border-radius: 20px;
   }
 
-  .home-why-carousel__media {
-    flex: none;
-    max-width: none;
-    width: 100%;
-    min-height: 260px;
-    max-height: 300px;
+  .home-why-carousel__stage {
+    height: 220px;
   }
 
-  .home-why-carousel__img {
-    min-height: 260px;
-    max-height: 300px;
+  .home-why-card {
+    height: 200px;
+    border-radius: 18px;
   }
 
-  .home-why-carousel__panel {
-    padding: 1.65rem 1.4rem 1.85rem;
+  .home-why-card.is-left {
+    transform: translate(calc(-50% - 190px), -50%) scale(0.82);
+  }
+
+  .home-why-card.is-right {
+    transform: translate(calc(-50% + 190px), -50%) scale(0.82);
   }
 
   .home-why-carousel__steps {
@@ -2629,6 +2689,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 .home-features__shell {
@@ -2664,7 +2725,7 @@ a:hover {
 .home-features__heading {
   margin: 0 0 1.15rem;
   text-align: center;
-  font-family: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   font-weight: 800;
   font-size: clamp(2.35rem, 5vw + 1.05rem, 3.9rem);
   color: #f8fafc;
@@ -2680,7 +2741,7 @@ a:hover {
 .home-features__dek {
   margin: 0 auto;
   text-align: center;
-  font-family: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   font-weight: 500;
   font-size: clamp(1.15rem, 2.1vw + 0.8rem, 1.58rem);
   line-height: 1.62;
@@ -4030,6 +4091,7 @@ a.card-tile__title:hover {
 .cards-page--light .card-media {
   background: #153452;
   border-bottom-color: #2a4f74;
+  min-height: 176px;
 }
 
 .cards-page--light .card-placeholder {
@@ -4114,9 +4176,9 @@ a.card-tile__title:hover {
 
 .mp-row__thumb {
   position: relative;
-  flex: 0 0 88px;
-  width: 88px;
-  height: 88px;
+  flex: 0 0 104px;
+  width: 104px;
+  height: 104px;
   border-radius: 4px;
   border: 1px solid var(--mp-line-soft, #9fb2cc);
   background: var(--mp-surface, #c9d8ed);
@@ -4217,6 +4279,26 @@ a.mp-row__title:hover {
 
 .mp-pill--red {
   background: #dc2626;
+  color: #ffffff;
+}
+
+.mp-pill--pink {
+  background: #ec4899;
+  color: #ffffff;
+}
+
+.mp-pill--teal {
+  background: #0ea5a4;
+  color: #ffffff;
+}
+
+.mp-pill--violet {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.mp-pill--slate {
+  background: #334155;
   color: #ffffff;
 }
 

@@ -74,7 +74,7 @@ export default function SiteFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link className="site-footer__link" to="/alerts">
+                  <Link className="site-footer__link" to="/comparison-alert">
                     Price alerts
                   </Link>
                 </li>

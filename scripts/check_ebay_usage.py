@@ -5,8 +5,8 @@ Check eBay API rate limit and usage for Browse API only (sport card search).
 - GET /user_rate_limit/  — user-level (EBAY_REFRESH_TOKEN)
 
 Filtered to api_name=browse, api_context=buy (same as scrapers).
-Uses same env files as ingest_ebay.py: first of server/.env, .env (does not override existing os.environ).
-Run: python check_ebay_usage.py
+Uses same env loading as ingest/compare: repo root `.env` then `server/.env`.
+Run: python scripts/check_ebay_usage.py
 """
 
 import base64
@@ -14,39 +14,10 @@ import os
 
 import requests
 
-
-def _load_env_from_dotenv() -> str | None:
-    """Same as ingest_ebay.py: server/.env then .env; stop after first file found. Returns path used or None."""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    candidate_paths = [
-        os.path.join(base_dir, "server", ".env"),
-        os.path.join(base_dir, ".env"),
-    ]
-    loaded: str | None = None
-    for path in candidate_paths:
-        if not os.path.exists(path):
-            continue
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#") or "=" not in line:
-                        continue
-                    key, value = line.split("=", 1)
-                    key = key.strip().lstrip("\ufeff")  # BOM can break first key
-                    value = value.strip().strip("\r\n")
-                    if len(value) >= 2 and value[0] == value[-1] and value[0] in '"\'':
-                        value = value[1:-1]
-                    if key and key not in os.environ:
-                        os.environ[key] = value
-        except OSError as e:
-            print(f"Warning: could not load env file {path}: {e}")
-        loaded = path
-        break
-    return loaded
+from env_loader import load_repo_dotenv
 
 
-_env_file = _load_env_from_dotenv()
+_env_file = load_repo_dotenv(script_file=__file__)
 
 def _clean_env_value(s: str) -> str:
     """Remove quotes, CR/LF, and surrounding whitespace that break eBay auth."""

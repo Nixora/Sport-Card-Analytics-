@@ -202,7 +202,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Real-time visibility",
     keyword: "Live prices & trends",
     body: "Latest asks and listing context, with direction over days and weeks—so you catch moves before the window closes.",
-    ctaTo: "/marketplace-comparison",
+    ctaTo: "/marketplace",
   },
   {
     id: "compare",
@@ -210,7 +210,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Cross-market context",
     keyword: "Compare the same card everywhere",
     body: "One card, many platforms—side-by-side context for clearer buy, sell, or pass decisions without juggling tabs.",
-    ctaTo: "/marketplace-comparison",
+    ctaTo: "/marketplace",
   },
   {
     id: "alerts",
@@ -218,7 +218,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Stay ahead",
     keyword: "Smart price alerts",
     body: "Get nudges on spikes, drops, or new comps, and set targets so you can act when it matters—not after the fact.",
-    ctaTo: "/alerts",
+    ctaTo: "/comparison-alert",
   },
   {
     id: "forecast",
@@ -226,7 +226,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Modeling & framing",
     keyword: "Predictive signals",
     body: "Blend history with trend modeling for forward-looking ranges—not promises—so investments are easier to reason about.",
-    ctaTo: "/marketplace-comparison",
+    ctaTo: "/marketplace",
   },
   {
     id: "portfolio",
@@ -234,7 +234,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Your collection",
     keyword: "Portfolio in one view",
     body: "Holdings, performance snapshot, and where you’re concentrated—so gaps and risk show up at a glance.",
-    ctaTo: "/marketplace-comparison",
+    ctaTo: "/marketplace",
   },
 ];
 
@@ -252,7 +252,7 @@ const FEATURE_CARDS = [
       "Less tab chaos, cleaner comp workflow.",
     ],
     image: featureCompareImg,
-    to: "/marketplace-comparison",
+    to: "/marketplace",
     cta: "Open comparison",
   },
   {
@@ -265,7 +265,7 @@ const FEATURE_CARDS = [
       "History-aware median asks for context.",
     ],
     image: featureAnalyticsImg,
-    to: "/marketplace-comparison",
+    to: "/marketplace",
     cta: "Open a card",
   },
   {
@@ -278,7 +278,7 @@ const FEATURE_CARDS = [
       "Act while the window is still open.",
     ],
     image: featureAlertsImg,
-    to: "/alerts",
+    to: "/comparison-alert",
     cta: "Set alerts",
   },
   {
@@ -291,7 +291,7 @@ const FEATURE_CARDS = [
       "See how grade ties to liquidity.",
     ],
     image: featureGradingImg,
-    to: "/marketplace-comparison",
+    to: "/marketplace",
     cta: "Browse cards",
   },
   {
@@ -527,7 +527,7 @@ export default function Dashboard() {
           <div
             className={`home-hero-ctas${heroHeadlineDone ? " home-hero-ctas--visible" : ""}`}
           >
-            <Link className="hero-btn hero-btn--solid" to="/marketplace-comparison">
+            <Link className="hero-btn hero-btn--solid" to="/marketplace">
               <span className="hero-btn__label">Get Started</span>
             </Link>
             <a className="hero-btn hero-btn--outline" href="#market-state">
@@ -623,66 +623,50 @@ export default function Dashboard() {
           onMouseLeave={() => setWhyCarouselHover(false)}
         >
           <div className="home-why-carousel__banner" aria-live="polite">
-            <div className="home-why-carousel__media">
-              <img
-                key={whyActive.id}
-                src={whyActive.image}
-                alt=""
-                className="home-why-carousel__img"
-                loading="lazy"
-                decoding="async"
-              />
+            <div key={whyActive.id} className="home-why-carousel__copy">
+              <p className="anim-line home-why-carousel__overline">{whyActive.overline}</p>
+              <h3 className="anim-line anim-line--delay-1 home-why-carousel__title">{whyActive.keyword}</h3>
+              <p className="anim-line anim-line--delay-2 home-why-carousel__body">{whyActive.body}</p>
+              <Link
+                className="anim-line anim-line--delay-3 home-why-carousel__cta"
+                to={whyActive.ctaTo}
+              >
+                Learn more
+                <span className="home-why-carousel__cta-chev" aria-hidden>
+                  ›
+                </span>
+              </Link>
             </div>
-            <div className="home-why-carousel__panel">
-              <div key={whyActive.id} className="home-why-carousel__panel-inner">
-                <p className="anim-line home-why-carousel__overline">{whyActive.overline}</p>
-                <h3 className="anim-line anim-line--delay-1 home-why-carousel__title">{whyActive.keyword}</h3>
-                <p className="anim-line anim-line--delay-2 home-why-carousel__body">{whyActive.body}</p>
-                <Link
-                  className="anim-line anim-line--delay-3 home-why-carousel__cta"
-                  to={whyActive.ctaTo}
-                >
-                  Learn more
-                  <span className="home-why-carousel__cta-chev" aria-hidden>
-                    ›
-                  </span>
-                </Link>
-              </div>
+
+            <div className="home-why-carousel__stage" aria-hidden>
+              {WHY_PLATFORM_CARDS.map((card, i) => {
+                const left = (whySlide - 1 + whyLen) % whyLen;
+                const right = (whySlide + 1) % whyLen;
+                const pos =
+                  i === whySlide ? "is-active" : i === left ? "is-left" : i === right ? "is-right" : "is-hidden";
+                const go = () => setWhySlide(i);
+                return (
+                  <button
+                    key={`card-${card.id}`}
+                    type="button"
+                    className={`home-why-card ${pos}`}
+                    onClick={go}
+                    tabIndex={-1}
+                    aria-label={`Open: ${card.keyword}`}
+                  >
+                    <img
+                      src={card.image}
+                      alt=""
+                      className="home-why-card__img"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <nav className="home-why-carousel__nav" aria-label="Carousel slides">
-            <button
-              type="button"
-              className="home-why-carousel__arrow"
-              aria-label="Previous slide"
-              onClick={() => setWhySlide((i) => (i - 1 + whyLen) % whyLen)}
-            >
-              ‹
-            </button>
-            <div className="home-why-carousel__steps">
-              {WHY_PLATFORM_CARDS.map((item, i) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`home-why-carousel__step${i === whySlide ? " is-active" : ""}`}
-                  aria-label={`Slide ${i + 1}: ${item.keyword}`}
-                  aria-current={i === whySlide ? "true" : undefined}
-                  onClick={() => setWhySlide(i)}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="home-why-carousel__arrow"
-              aria-label="Next slide"
-              onClick={() => setWhySlide((i) => (i + 1) % whyLen)}
-            >
-              ›
-            </button>
-          </nav>
         </div>
       </section>
 
