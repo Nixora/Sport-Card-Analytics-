@@ -108,7 +108,7 @@ export default function Alerts() {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [page, setPage] = useState(1);
-  const limit = 50;
+  const limit = 25;
 
   useEffect(() => {
     let cancelled = false;

@@ -9,6 +9,7 @@ const {
   SORT_API,
 } = require("../services/cards");
 const { getTopMovers } = require("../services/movers");
+const { listSellers, getSellerProfile } = require("../services/sellers");
 
 const router = express.Router();
 
@@ -39,6 +40,27 @@ router.get("/cards", async (req, res, next) => {
   try {
     const db = await getDb();
     const body = await listCards(db, req.query);
+    res.json(body);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/sellers", async (req, res, next) => {
+  try {
+    const db = await getDb();
+    const body = await listSellers(db, req.query);
+    res.json(body);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/sellers/:sellerUsername", async (req, res, next) => {
+  try {
+    const db = await getDb();
+    const body = await getSellerProfile(db, req.params.sellerUsername, req.query);
+    if (!body) return res.status(404).json({ error: "Seller not found" });
     res.json(body);
   } catch (e) {
     next(e);

@@ -202,6 +202,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Real-time visibility",
     keyword: "Live prices & trends",
     body: "Latest asks and listing context, with direction over days and weeks—so you catch moves before the window closes.",
+    tags: ["Live asks", "Listing depth", "Trend context"],
     ctaTo: "/marketplace",
   },
   {
@@ -210,6 +211,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Cross-market context",
     keyword: "Compare the same card everywhere",
     body: "One card, many platforms—side-by-side context for clearer buy, sell, or pass decisions without juggling tabs.",
+    tags: ["Multi-market", "Side-by-side", "Comps"],
     ctaTo: "/marketplace",
   },
   {
@@ -218,6 +220,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Stay ahead",
     keyword: "Smart price alerts",
     body: "Get nudges on spikes, drops, or new comps, and set targets so you can act when it matters—not after the fact.",
+    tags: ["Targets", "Notifications", "Price moves"],
     ctaTo: "/comparison-alert",
   },
   {
@@ -226,6 +229,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Modeling & framing",
     keyword: "Predictive signals",
     body: "Blend history with trend modeling for forward-looking ranges—not promises—so investments are easier to reason about.",
+    tags: ["Modeling", "Historical blend", "Ranges"],
     ctaTo: "/marketplace",
   },
   {
@@ -234,6 +238,7 @@ const WHY_PLATFORM_CARDS = [
     overline: "Your collection",
     keyword: "Portfolio in one view",
     body: "Holdings, performance snapshot, and where you’re concentrated—so gaps and risk show up at a glance.",
+    tags: ["Holdings", "Performance", "Allocation"],
     ctaTo: "/marketplace",
   },
 ];
@@ -622,51 +627,81 @@ export default function Dashboard() {
           onMouseEnter={() => setWhyCarouselHover(true)}
           onMouseLeave={() => setWhyCarouselHover(false)}
         >
-          <div className="home-why-carousel__banner" aria-live="polite">
-            <div key={whyActive.id} className="home-why-carousel__copy">
-              <p className="anim-line home-why-carousel__overline">{whyActive.overline}</p>
-              <h3 className="anim-line anim-line--delay-1 home-why-carousel__title">{whyActive.keyword}</h3>
-              <p className="anim-line anim-line--delay-2 home-why-carousel__body">{whyActive.body}</p>
-              <Link
-                className="anim-line anim-line--delay-3 home-why-carousel__cta"
-                to={whyActive.ctaTo}
+          <div className="home-why-carousel__shell" aria-live="polite">
+            <div className="home-why-carousel__card">
+              <div className="home-why-carousel__media">
+                <img
+                  key={whyActive.id}
+                  src={whyActive.image}
+                  alt=""
+                  className="home-why-carousel__img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div
+                key={whyActive.id}
+                className="home-why-carousel__panel"
+                aria-describedby={`why-slide-${whyActive.id}-desc`}
               >
-                Learn more
-                <span className="home-why-carousel__cta-chev" aria-hidden>
-                  ›
-                </span>
-              </Link>
+                <p className="anim-line home-why-carousel__overline">{whyActive.overline}</p>
+                <h3 className="anim-line anim-line--delay-1 home-why-carousel__title">{whyActive.keyword}</h3>
+                <p id={`why-slide-${whyActive.id}-desc`} className="sr-only">
+                  {whyActive.body}
+                </p>
+                <ul className="anim-line anim-line--delay-2 home-why-carousel__tags" aria-label="Highlights">
+                  {whyActive.tags.map((tag) => (
+                    <li key={tag} className="home-why-carousel__tag">
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  className="anim-line anim-line--delay-3 home-why-carousel__cta"
+                  to={whyActive.ctaTo}
+                >
+                  Learn more
+                  <span className="home-why-carousel__cta-chev" aria-hidden>
+                    ›
+                  </span>
+                </Link>
+              </div>
             </div>
 
-            <div className="home-why-carousel__stage" aria-hidden>
-              {WHY_PLATFORM_CARDS.map((card, i) => {
-                const left = (whySlide - 1 + whyLen) % whyLen;
-                const right = (whySlide + 1) % whyLen;
-                const pos =
-                  i === whySlide ? "is-active" : i === left ? "is-left" : i === right ? "is-right" : "is-hidden";
-                const go = () => setWhySlide(i);
-                return (
+            <nav className="home-why-carousel__nav" aria-label="Slide navigation">
+              <button
+                type="button"
+                className="home-why-carousel__arrow"
+                aria-label="Previous slide"
+                onClick={() => setWhySlide((i) => (i - 1 + whyLen) % whyLen)}
+              >
+                ‹
+              </button>
+              <div className="home-why-carousel__steps" role="tablist" aria-label="Slides">
+                {WHY_PLATFORM_CARDS.map((card, i) => (
                   <button
-                    key={`card-${card.id}`}
+                    key={`step-${card.id}`}
                     type="button"
-                    className={`home-why-card ${pos}`}
-                    onClick={go}
-                    tabIndex={-1}
-                    aria-label={`Open: ${card.keyword}`}
+                    role="tab"
+                    aria-selected={i === whySlide}
+                    aria-label={`Slide ${String(i + 1).padStart(2, "0")}: ${card.keyword}`}
+                    className={`home-why-carousel__step${i === whySlide ? " is-active" : ""}`}
+                    onClick={() => setWhySlide(i)}
                   >
-                    <img
-                      src={card.image}
-                      alt=""
-                      className="home-why-card__img"
-                      loading="lazy"
-                      decoding="async"
-                    />
+                    {String(i + 1).padStart(2, "0")}
                   </button>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="home-why-carousel__arrow"
+                aria-label="Next slide"
+                onClick={() => setWhySlide((i) => (i + 1) % whyLen)}
+              >
+                ›
+              </button>
+            </nav>
           </div>
-
         </div>
       </section>
 

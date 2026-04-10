@@ -147,6 +147,9 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           <NavLink to="/comparison-alert" className={navClass}>
             Comparison and Alert
           </NavLink>
+          <NavLink to="/seller-analysis" className={navClass}>
+            Seller analysis
+          </NavLink>
           <NavLink to="/premium" className={navClass}>
             Premium
           </NavLink>
@@ -207,6 +210,13 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                 onClick={() => setMenuOpen(false)}
               >
                 Comparison and Alert
+              </NavLink>
+              <NavLink
+                to="/seller-analysis"
+                className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Seller analysis
               </NavLink>
               <NavLink
                 to="/premium"

@@ -8,6 +8,8 @@ import CardDetail from "./pages/CardDetail.jsx";
 import Alerts from "./pages/Alerts.jsx";
 import Community from "./pages/Community.jsx";
 import Premium from "./pages/Premium.jsx";
+import Sellers from "./pages/Sellers.jsx";
+import SellerProfile from "./pages/SellerProfile.jsx";
 
 function RedirectAnalyticsToCard() {
   const { cardKey } = useParams();
@@ -67,6 +69,8 @@ export default function App() {
             <Route path="/analytics/:cardKey" element={<RedirectAnalyticsToCard />} />
             <Route path="/comparison-alert" element={<Alerts />} />
             <Route path="/alerts" element={<Navigate to="/comparison-alert" replace />} />
+            <Route path="/seller-analysis" element={<Sellers />} />
+            <Route path="/sellers/:sellerUsername" element={<SellerProfile />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/community" element={<Community />} />
           </Routes>

@@ -74,7 +74,7 @@ export default function Cards() {
 
   useEffect(() => {
     let cancelled = false;
-    const params = { page, limit: 50, sort };
+    const params = { page, limit: 25, sort };
     if (autograph) params.autograph = "true";
     if (graded) params.graded = "true";
     (async () => {

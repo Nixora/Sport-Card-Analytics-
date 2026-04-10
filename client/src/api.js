@@ -54,3 +54,13 @@ export function fetchMovers(params = {}) {
   const q = new URLSearchParams(params).toString();
   return getJson(`/api/movers?${q}`);
 }
+
+export function fetchSellers(params = {}) {
+  const q = new URLSearchParams(params).toString();
+  return getJson(`/api/sellers?${q}`);
+}
+
+export function fetchSellerProfile(sellerUsername, params = {}) {
+  const q = new URLSearchParams(params).toString();
+  return getJson(`/api/sellers/${encodeURIComponent(sellerUsername)}?${q}`);
+}
