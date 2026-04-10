@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
@@ -35,6 +36,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
 app.use(express.json({ limit: "256kb" }));
 app.use(morgan("combined"));
 
@@ -66,13 +68,23 @@ app.use((_req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({
-    error: "Internal server error",
-    message: config.clientOrigins.some((o) => o.includes("localhost"))
-      ? String(err.message)
-      : undefined,
+  const mongoDown =
+    err?.name === "MongoServerSelectionError" ||
+    err?.name === "MongoNetworkError" ||
+    err?.name === "MongoNotConnectedError";
+  const status = mongoDown ? 503 : 500;
+  const errorLabel = mongoDown ? "Database unavailable" : "Internal server error";
+  const showDetail = config.clientOrigins.some((o) => o.includes("localhost")) || !isProd;
+  res.status(status).json({
+    error: errorLabel,
+    message: showDetail ? String(err.message) : undefined,
   });
 });
+
+if (isProd && !String(config.authJwtSecret || "").trim()) {
+  console.error("FATAL: AUTH_JWT_SECRET is required when NODE_ENV=production.");
+  process.exit(1);
+}
 
 const server = app.listen(config.port, config.apiListenHost, () => {
   const host = config.apiListenHost;

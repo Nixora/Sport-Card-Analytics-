@@ -53,4 +53,11 @@ module.exports = {
   ),
   disclaimerAskingSample:
     "Median asking price from active listings returned by your saved search sample—not sold FMV or full eBay inventory.",
+  usersCollection: req("MONGODB_USERS_COLLECTION", "app_users"),
+  communityArticlesCollection: req("MONGODB_COMMUNITY_COLLECTION", "app_community_articles"),
+  /** HS256 secret for auth cookies; required when NODE_ENV=production */
+  authJwtSecret: req("AUTH_JWT_SECRET", ""),
+  authCookieName: req("AUTH_COOKIE_NAME", "nixsor_auth"),
+  /** Set true behind HTTPS so auth cookie is Secure */
+  authCookieSecure: req("AUTH_COOKIE_SECURE", "").toLowerCase() === "true",
 };

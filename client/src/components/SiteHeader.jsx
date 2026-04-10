@@ -1,5 +1,8 @@
 import { forwardRef, useEffect, useState } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
+import { profileImageUrl } from "../api.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import AuthModal from "./AuthModal.jsx";
 
 const HOME_SCROLL_SOLID_PX = 40;
 
@@ -75,10 +78,31 @@ function navClass({ isActive }) {
   return `site-header__nav-link${isActive ? " is-active" : ""}`;
 }
 
+function emailInitials(email) {
+  const local = String(email || "?").split("@")[0] || "?";
+  const clean = local.replace(/[^a-z0-9]+/gi, " ").trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return local.slice(0, 2).toUpperCase();
+}
+
+function avatarInitials(user) {
+  const name = user?.display_name?.trim();
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  }
+  return emailInitials(user?.email);
+}
+
 const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
   const { pathname } = useLocation();
+  const { user, signOut } = useAuth();
+  const marketplaceNavActive = marketplaceActive({ pathname });
   const isHome = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authModal, setAuthModal] = useState(null);
   const [headerPressed, setHeaderPressed] = useState(false);
   const [homeScrolled, setHomeScrolled] = useState(false);
 
@@ -99,11 +123,22 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key !== "Escape") return;
+      if (authModal) setAuthModal(null);
+      else setMenuOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [authModal]);
+
+  useEffect(() => {
+    if (!authModal) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [authModal]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -139,8 +174,9 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
         <nav className="site-header__nix-nav" aria-label="Main">
           <NavLink
             to="/marketplace"
-            className={navClass}
-            isActive={marketplaceActive}
+            className={({ isActive }) =>
+              `site-header__nav-link${isActive || marketplaceNavActive ? " is-active" : ""}`
+            }
           >
             Marketplace
           </NavLink>
@@ -173,6 +209,26 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           <Link to="/community" className="site-header__contact-cta">
             Contact Us
           </Link>
+          {user ? (
+            <>
+              <Link to="/profile" className="site-header__avatar" aria-label="Open profile">
+                {user.avatar?.id ? (
+                  <img src={profileImageUrl(user.avatar.id)} alt="" className="site-header__avatar-img" />
+                ) : (
+                  <span className="site-header__avatar-initials" aria-hidden>
+                    {avatarInitials(user)}
+                  </span>
+                )}
+              </Link>
+              <button type="button" className="site-header__sign-out" onClick={() => signOut()}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button type="button" className="site-header__sign-link" onClick={() => setAuthModal("signin")}>
+              Sign in
+            </button>
+          )}
           <button
             type="button"
             className="site-header__menu-btn"
@@ -198,9 +254,10 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
             <nav className="site-header__drawer-nav" aria-label="Mobile">
               <NavLink
                 to="/marketplace"
-                className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
+                className={({ isActive }) =>
+                  `site-header__drawer-link${isActive || marketplaceNavActive ? " is-active" : ""}`
+                }
                 onClick={() => setMenuOpen(false)}
-                isActive={marketplaceActive}
               >
                 Marketplace
               </NavLink>
@@ -239,10 +296,50 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
               >
                 Contact Us
               </Link>
+              {user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="site-header__drawer-link"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    className="site-header__drawer-link"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      signOut();
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="site-header__drawer-link"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setAuthModal("signin");
+                  }}
+                >
+                  Sign in
+                </button>
+              )}
             </nav>
           </div>
         </>
       )}
+
+      {authModal ? (
+        <AuthModal
+          mode={authModal}
+          onClose={() => setAuthModal(null)}
+          onSwitchMode={setAuthModal}
+        />
+      ) : null}
     </header>
   );
 });

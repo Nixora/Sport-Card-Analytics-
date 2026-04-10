@@ -256,7 +256,7 @@ function TrendLineChart({ series, currency, compareLines = [] }) {
               cx={x}
               cy={y}
               r={isHover ? "8" : "5"}
-              fill={isHover ? "#7ec8ff" : "#0c2239"}
+              fill={isHover ? "#7ec8ff" : "#0d456d"}
               stroke={isHover ? "#e6f3ff" : "#bfe2ff"}
               strokeWidth={isHover ? "2.25" : "1.75"}
               style={{ cursor: "pointer" }}
@@ -718,7 +718,13 @@ export default function CardDetail() {
                     >
                       <IconSeller />
                       <span>
-                        Seller <strong style={{ color: "#eef5ff" }}>{card.seller_username}</strong>
+                        Seller{" "}
+                        <Link
+                          to={`/sellers/${encodeURIComponent(card.seller_username)}`}
+                          className="card-detail-top__seller-link"
+                        >
+                          <strong style={{ color: "#eef5ff" }}>{card.seller_username}</strong>
+                        </Link>
                         {typeof card.seller_feedback_percentage === "number" ? (
                           <span className="muted"> · {card.seller_feedback_percentage}%</span>
                         ) : null}
@@ -953,7 +959,7 @@ export default function CardDetail() {
                                   fontWeight: 800,
                                   letterSpacing: "0.06em",
                                   textTransform: "uppercase",
-                                  color: "#0c2239",
+                                  color: "#0d456d",
                                   background: "rgba(255,255,255,0.92)",
                                   padding: "4px 7px",
                                   borderRadius: 0,
@@ -970,7 +976,7 @@ export default function CardDetail() {
                                     fontSize: 11,
                                     fontWeight: 900,
                                     letterSpacing: "0.02em",
-                                    color: "#0c2239",
+                                    color: "#0d456d",
                                     background: "rgba(255,255,255,0.92)",
                                     padding: "4px 7px",
                                     borderRadius: 0,

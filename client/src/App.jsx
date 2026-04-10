@@ -7,9 +7,11 @@ import Cards from "./pages/Cards.jsx";
 import CardDetail from "./pages/CardDetail.jsx";
 import Alerts from "./pages/Alerts.jsx";
 import Community from "./pages/Community.jsx";
+import CommunityNew from "./pages/CommunityNew.jsx";
 import Premium from "./pages/Premium.jsx";
 import Sellers from "./pages/Sellers.jsx";
 import SellerProfile from "./pages/SellerProfile.jsx";
+import Profile from "./pages/Profile.jsx";
 
 function RedirectAnalyticsToCard() {
   const { cardKey } = useParams();
@@ -45,18 +47,30 @@ export default function App() {
   } else if (normalizedPath.startsWith("/analytics/")) {
     const cardKey = decodeURIComponent(normalizedPath.replace("/analytics/", ""));
     bodyPathLabel = `home / marketplace / ${cardKey}`;
+  } else if (normalizedPath === "/community/new") {
+    bodyPathLabel = "home / community / new";
+  } else if (normalizedPath.startsWith("/community/") && normalizedPath !== "/community") {
+    const tail = decodeURIComponent(normalizedPath.replace(/^\/community\//, ""));
+    bodyPathLabel = `home / community / ${tail}`;
+  } else if (normalizedPath.startsWith("/u/")) {
+    const slug = decodeURIComponent(normalizedPath.replace(/^\/u\//, ""));
+    bodyPathLabel = `home / profile / ${slug}`;
   } else {
     bodyPathLabel = `home / ${normalizedPath.replace(/^\//, "")}`;
   }
 
   const marketplaceListRoute = normalizedPath === "/marketplace";
+  const communityShellRoute =
+    normalizedPath === "/community" ||
+    normalizedPath === "/community/new" ||
+    normalizedPath.startsWith("/community/");
 
   return (
     <div ref={layoutRef} className="layout">
       <SiteHeader ref={headerRef} />
       <main className={`site-main${isHome ? " site-main--home" : ""}`} id="main-content">
         <div
-          className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}`}
+          className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}`}
         >
           {showBodyPath && <p className="body-path-label">{bodyPathLabel}</p>}
           <Routes>
@@ -72,7 +86,13 @@ export default function App() {
             <Route path="/seller-analysis" element={<Sellers />} />
             <Route path="/sellers/:sellerUsername" element={<SellerProfile />} />
             <Route path="/premium" element={<Premium />} />
+            <Route path="/community/new" element={<CommunityNew />} />
+            <Route path="/community/:articleId" element={<Community />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/u/:displayName" element={<Profile />} />
+            <Route path="/sign-in" element={<Navigate to="/" replace />} />
+            <Route path="/sign-up" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </main>

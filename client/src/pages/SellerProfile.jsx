@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
 import { fetchSellerProfile } from "../api.js";
 
@@ -242,6 +242,7 @@ function SellerCardPriceChart({ cards }) {
 }
 
 export default function SellerProfile() {
+  const navigate = useNavigate();
   const { sellerUsername } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -313,6 +314,19 @@ export default function SellerProfile() {
         breadcrumb={`sellers / ${sellerUsername || ""}`}
         description={`Seller profile for ${sellerUsername || ""}: feedback metrics and card list.`}
       />
+
+      <nav className="card-detail-nav" aria-label="Seller">
+        <button
+          type="button"
+          className="card-detail-nav__back"
+          onClick={() => {
+            if (window.history.length > 1) navigate(-1);
+            else navigate("/seller-analysis");
+          }}
+        >
+          ← Back
+        </button>
+      </nav>
 
       {err && <p className="err">{err}</p>}
       {!data && !err && <p className="muted">Loading…</p>}
