@@ -116,6 +116,7 @@ export default function Cards() {
       {err && <p className="err">{err}</p>}
       {!data && !err && <p className="muted">Loading…</p>}
       {data && (
+        <>
         <div className="cards-layout">
           <section>
             {viewMode === "cards" ? (
@@ -263,20 +264,6 @@ export default function Cards() {
                       />{" "}
                       <span className="ui-icon" aria-hidden="true">✓</span> Grade/auth keywords
                     </label>
-                    <div className="filters-pager">
-                      <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                        Prev
-                      </button>
-                      <span className="muted">
-                        Page {page} / {totalPages}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      >
-                        Next
-                      </button>
-                    </div>
                   </div>
                 </div>
                 <div className="mp-list" role="list">
@@ -420,23 +407,32 @@ export default function Cards() {
                 />{" "}
                 Grade/auth keywords
               </label>
-              <div className="filters-pager">
-                <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                  Prev
-                </button>
-                <span className="muted">
-                  Page {page} / {totalPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                >
-                  Next
-                </button>
-              </div>
             </div>
           </aside>
         </div>
+
+        <div className="floating-pager" aria-label="Pagination">
+          <button
+            type="button"
+            className="hero-btn hero-btn--outline"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Prev
+          </button>
+          <span className="floating-pager__meta">
+            {page}/{totalPages}
+          </span>
+          <button
+            type="button"
+            className="hero-btn hero-btn--outline"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+        </>
       )}
     </div>
   );

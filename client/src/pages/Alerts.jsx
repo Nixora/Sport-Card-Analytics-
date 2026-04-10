@@ -378,44 +378,23 @@ export default function Alerts() {
         </div>
       )}
 
-      <div
-        style={{
-          position: "fixed",
-          top: "calc(var(--site-header-height, 72px) + 12px)",
-          right: 16,
-          zIndex: 60,
-          padding: "10px 10px",
-          borderRadius: 14,
-          background: "rgba(12, 26, 43, 0.92)",
-          border: "1px solid rgba(159, 178, 204, 0.35)",
-          boxShadow: "0 10px 28px rgba(0,0,0,0.28)",
-          backdropFilter: "blur(10px)",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-        aria-label="Pagination"
-      >
+      <div className="floating-pager" aria-label="Pagination">
         <button
           type="button"
           className="hero-btn hero-btn--outline"
           disabled={page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
-          style={{ opacity: page <= 1 ? 0.55 : 1, padding: "0.45rem 0.7rem" }}
         >
           Prev
         </button>
 
-        <span className="muted" style={{ fontWeight: 800, whiteSpace: "nowrap" }}>
-          {page}/{totalPages}
-        </span>
+        <span className="floating-pager__meta">{page}/{totalPages}</span>
 
         <button
           type="button"
           className="hero-btn hero-btn--outline"
           disabled={page >= totalPages}
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          style={{ opacity: page >= totalPages ? 0.55 : 1, padding: "0.45rem 0.7rem" }}
         >
           Next
         </button>

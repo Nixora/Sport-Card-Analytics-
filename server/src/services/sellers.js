@@ -1,11 +1,5 @@
 const config = require("../config");
 
-const SORT_API = {
-  card_count: "card_count",
-  feedback_pct: "seller_feedback_percentage",
-  feedback_score: "seller_feedback_score",
-};
-
 function toInt(v, fallback) {
   const n = parseInt(String(v ?? ""), 10);
   return Number.isFinite(n) ? n : fallback;
@@ -36,7 +30,9 @@ async function listSellers(db, q) {
   const limit = clamp(toInt(q.limit, 25), 1, 100);
   const cardsLimit = clamp(toInt(q.cardsLimit, 20), 1, 50);
 
-  const sortKey = SORT_API[q.sort] || SORT_API.card_count;
+  const sortId = String(q.sort || "card_count").toLowerCase();
+  const allowedSort = new Set(["card_count", "feedback_pct", "feedback_score", "seller_username"]);
+  const sortKey = allowedSort.has(sortId) ? sortId : "card_count";
   const order = orderNum(q.order);
 
   const items = db.collection(config.ebayItemsCollection);
@@ -107,11 +103,14 @@ async function listSellers(db, q) {
     {
       $sort: {
         ...(sortKey === "card_count"
-          ? { sort_card_count: order }
-          : sortKey === "seller_feedback_percentage"
-            ? { sort_feedback_pct: order }
-            : { sort_feedback_score: order }),
-        seller_username: 1,
+          ? { sort_card_count: order, seller_username: 1 }
+          : sortKey === "feedback_pct"
+            ? { sort_feedback_pct: order, seller_username: 1 }
+            : sortKey === "feedback_score"
+              ? { sort_feedback_score: order, seller_username: 1 }
+              : sortKey === "seller_username"
+                ? { seller_username: order }
+                : { sort_card_count: order, seller_username: 1 }),
       },
     },
     {
@@ -142,7 +141,7 @@ async function listSellers(db, q) {
     total,
     page,
     limit,
-    sort: q.sort || "card_count",
+    sort: sortKey,
     order: String(q.order || "desc").toLowerCase() === "asc" ? "asc" : "desc",
     cardsLimit,
   };
@@ -151,7 +150,6 @@ async function listSellers(db, q) {
 module.exports = {
   listSellers,
   getSellerProfile,
-  SORT_API,
 };
 
 function toNum(v) {
