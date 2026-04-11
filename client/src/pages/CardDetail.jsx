@@ -633,8 +633,8 @@ export default function CardDetail() {
         breadcrumb={breadcrumbTrail}
         description={
           card
-            ? `Trends, listings, conditions, and keyword signals for ${card.card_key} on Nixsor.`
-            : "Card detail on Nixsor."
+            ? `Trends, listings, conditions, and keyword signals for ${card.card_key} on Nixsora.`
+            : "Card detail on Nixsora."
         }
       />
       <div className="card-detail-page card-detail-page--fullscreen">

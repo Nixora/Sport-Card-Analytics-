@@ -167,8 +167,8 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
       }}
     >
       <div className="site-header__nix-shell">
-        <Link to="/" className="site-header__nix-brand" aria-label="Nixsor home">
-          Nixsor
+        <Link to="/" className="site-header__nix-brand" aria-label="Nixsora home">
+          Nixsora
         </Link>
 
         <nav className="site-header__nix-nav" aria-label="Main">
@@ -186,11 +186,11 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           <NavLink to="/seller-analysis" className={navClass}>
             Seller analysis
           </NavLink>
-          <NavLink to="/premium" className={navClass}>
-            Premium
-          </NavLink>
           <NavLink to="/community" className={navClass}>
             Community
+          </NavLink>
+          <NavLink to="/premium" className={navClass}>
+            Pricing
           </NavLink>
         </nav>
 
@@ -206,9 +206,12 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
             EN
             <IconChevronNav />
           </button>
-          <Link to="/community" className="site-header__contact-cta">
+          <NavLink
+            to="/contact"
+            className={({ isActive }) => `site-header__contact-cta${isActive ? " is-active" : ""}`}
+          >
             Contact Us
-          </Link>
+          </NavLink>
           {user ? (
             <>
               <Link to="/profile" className="site-header__avatar" aria-label="Open profile">
@@ -276,26 +279,28 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                 Seller analysis
               </NavLink>
               <NavLink
-                to="/premium"
-                className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Premium
-              </NavLink>
-              <NavLink
                 to="/community"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
                 Community
               </NavLink>
-              <Link
-                to="/community"
-                className="site-header__drawer-link site-header__drawer-link--primary"
+              <NavLink
+                to="/premium"
+                className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Pricing
+              </NavLink>
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  `site-header__drawer-link site-header__drawer-link--primary${isActive ? " is-active" : ""}`
+                }
                 onClick={() => setMenuOpen(false)}
               >
                 Contact Us
-              </Link>
+              </NavLink>
               {user ? (
                 <>
                   <Link

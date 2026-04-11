@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Privacy and data protection</title>
+  <desc id="desc">Stylized shield with lock and abstract data grid on a dark blue background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="640" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0a2840"/>
+      <stop offset="0.45" stop-color="#0d456d"/>
+      <stop offset="1" stop-color="#061a2c"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="320" y1="40" x2="320" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7ec8ff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#4aa8ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="280" y1="72" x2="360" y2="288" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9fd6ff"/>
+      <stop offset="1" stop-color="#3b8fd9"/>
+    </linearGradient>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+  <rect width="640" height="360" rx="20" fill="url(#bg)"/>
+  <circle cx="520" cy="80" r="120" fill="url(#glow)" filter="url(#blur)" opacity="0.9"/>
+  <circle cx="120" cy="280" r="90" fill="url(#glow)" filter="url(#blur)" opacity="0.55"/>
+  <g opacity="0.12" stroke="#b8dcff" stroke-width="1">
+    <path d="M48 96h544M48 144h544M48 192h544M48 240h544M48 288h544"/>
+    <path d="M96 48v264M192 48v264M288 48v264M384 48v264M480 48v264M576 48v264"/>
+  </g>
+  <path
+    d="M320 76c-42 18-72 28-72 28v96c0 52 32 92 72 112 40-20 72-60 72-112v-96s-30-10-72-28z"
+    fill="url(#shield)"
+    stroke="#e8f4ff"
+    stroke-width="2"
+    stroke-linejoin="round"
+    opacity="0.95"
+  />
+  <rect x="292" y="168" width="56" height="44" rx="6" fill="#0a2840" stroke="#e8f4ff" stroke-width="2"/>
+  <path d="M320 152v24" stroke="#e8f4ff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="320" cy="146" r="10" stroke="#e8f4ff" stroke-width="2" fill="none"/>
+  <path d="M320 188v10" stroke="#7ec8ff" stroke-width="2.5" stroke-linecap="round"/>
+  <g opacity="0.35" stroke="#7ec8ff" stroke-width="2" stroke-linecap="round">
+    <path d="M88 200h40M88 216h28M520 200h40M520 216h32"/>
+  </g>
+</svg>

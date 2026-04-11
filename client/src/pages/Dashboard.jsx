@@ -19,6 +19,9 @@ import featureAnalyticsImg from "../assets/features/feature-analytics.jpg";
 import featureAlertsImg from "../assets/features/feature-alerts.jpg";
 import featureGradingImg from "../assets/features/feature-grading.jpg";
 import featureCommunityImg from "../assets/features/feature-community.jpg";
+import featureResearchImg from "../assets/features/feature-research.jpg";
+import featurePremiumImg from "../assets/features/feature-premium.jpg";
+import communityTeamImg from "../assets/community-team.jpg";
 
 /** Decorative candlesticks: 0–1 where 1 = top of chart (highest price). Not real market data. */
 const HERO_CANDLE_OHLC = [
@@ -245,6 +248,145 @@ const WHY_PLATFORM_CARDS = [
 
 const WHY_CAROUSEL_AUTOPLAY_MS = 5500;
 
+function HubTileGlyph({ name }) {
+  const svgProps = {
+    width: 20,
+    height: 20,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg",
+    "aria-hidden": true,
+  };
+  const s = { stroke: "currentColor", strokeWidth: 1.65, strokeLinecap: "round", strokeLinejoin: "round" };
+
+  switch (name) {
+    case "marketplace":
+      return (
+        <svg {...svgProps}>
+          <path {...s} d="M4 7h16M4 12h10M4 17h8" />
+          <rect {...s} x="14" y="14" width="6" height="5" rx="1" />
+        </svg>
+      );
+    case "alerts":
+      return (
+        <svg {...svgProps}>
+          <path
+            {...s}
+            d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7M13.7 19a2 2 0 11-3.4 0"
+          />
+        </svg>
+      );
+    case "sellers":
+      return (
+        <svg {...svgProps}>
+          <path {...s} d="M4 19V5M4 12h4l3-8 4 14 3-8h6" />
+        </svg>
+      );
+    case "pricing":
+      return (
+        <svg {...svgProps}>
+          <path {...s} d="M7 7h10M7 12h6M7 17h10" />
+          <circle {...s} cx="17" cy="7" r="2" />
+        </svg>
+      );
+    case "community":
+      return (
+        <svg {...svgProps}>
+          <path {...s} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z" />
+          <path {...s} d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+        </svg>
+      );
+    case "faq":
+      return (
+        <svg {...svgProps}>
+          <circle {...s} cx="12" cy="12" r="9" />
+          <path {...s} d="M9.8 9.5a2.2 2.2 0 014 1.3c0 1.2-.8 1.8-1.5 2.5-.4.4-.5.8-.5 1.2V15M12 17h.01" />
+        </svg>
+      );
+    case "privacy":
+      return (
+        <svg {...svgProps}>
+          <path
+            {...s}
+            d="M12 3l7 4v5c0 5-3.5 9-7 10-3.5-1-7-5-7-10V7l7-4z"
+          />
+        </svg>
+      );
+    case "contact":
+      return (
+        <svg {...svgProps}>
+          <rect {...s} x="3" y="5" width="18" height="14" rx="2" />
+          <path {...s} d="M3 7l9 6 9-6" />
+        </svg>
+      );
+    default:
+      return (
+        <svg {...svgProps}>
+          <circle {...s} cx="12" cy="12" r="9" />
+        </svg>
+      );
+  }
+}
+
+const HOME_HUB_TILES = [
+  {
+    to: "/marketplace",
+    title: "Marketplace",
+    blurb: "Browse cards, filters, and detail pages with cross-source context.",
+    image: featureCompareImg,
+    glyph: "marketplace",
+  },
+  {
+    to: "/comparison-alert",
+    title: "Comparison & alerts",
+    blurb: "Set targets and catch price moves while listings still matter.",
+    image: featureAlertsImg,
+    glyph: "alerts",
+  },
+  {
+    to: "/seller-analysis",
+    title: "Seller analysis",
+    blurb: "Review seller activity and patterns to size up supply and flow.",
+    image: featureResearchImg,
+    glyph: "sellers",
+  },
+  {
+    to: "/premium",
+    title: "Pricing",
+    blurb: "Compare Starter, Pro, and Team — billing arrives in a later release.",
+    image: featurePremiumImg,
+    glyph: "pricing",
+  },
+  {
+    to: "/community",
+    title: "Community",
+    blurb: "Read and share articles, threads, and research with other collectors.",
+    image: featureCommunityImg,
+    glyph: "community",
+  },
+  {
+    to: "/faq",
+    title: "FAQ",
+    blurb: "Straight answers on data, alerts, accounts, and how to get help.",
+    image: featureAnalyticsImg,
+    glyph: "faq",
+  },
+  {
+    to: "/privacy-policy",
+    title: "Privacy Policy",
+    blurb: "How Nixsora handles personal data and your choices.",
+    image: featureGradingImg,
+    glyph: "privacy",
+  },
+  {
+    to: "/contact",
+    title: "Contact",
+    blurb: "Reach the team by email or the on-page message form.",
+    image: communityTeamImg,
+    glyph: "contact",
+  },
+];
+
 /** Feature row imagery: Unsplash License (https://unsplash.com/license). Shutterstock not used (paid license). */
 const FEATURE_CARDS = [
   {
@@ -448,7 +590,7 @@ export default function Dashboard() {
       <PageHelmet
         isHome
         title="Sports Card Analytics"
-        description="Compare sports card prices across marketplaces. Analytics, alerts, grading insights, and community — powered by Nixsor."
+        description="Compare sports card prices across marketplaces. Analytics, alerts, grading insights, and community — powered by Nixsora."
       />
       <section
         className="home-hero home-hero--visual"
@@ -539,6 +681,9 @@ export default function Dashboard() {
               <span className="hero-btn__label">Learn More</span>
             </a>
           </div>
+          <p className={`home-hero-sublink${heroHeadlineDone ? " home-hero-sublink--visible" : ""}`}>
+            <a href="#explore-nixsora">Explore every area of the app ↓</a>
+          </p>
         </div>
         <HeroSourceImageFlow />
       </section>
@@ -826,6 +971,52 @@ export default function Dashboard() {
             .
           </p>
         </div>
+      </section>
+
+      <section id="explore-nixsora" className="home-hub" aria-labelledby="home-hub-heading">
+        <header className="home-hub__header">
+          <p className="home-hub__eyebrow">Full platform</p>
+          <h2 id="home-hub-heading" className="home-hub__title">
+            Explore every part of Nixsora
+          </h2>
+          <p className="home-hub__lead muted">
+            The sections above explain the “why.” Below is the map to every area of the product — marketplace, tools,
+            plans, community, help, and policies — so you can jump straight in.
+          </p>
+        </header>
+
+        <ul className="home-hub__grid">
+          {HOME_HUB_TILES.map((tile) => (
+            <li key={tile.to} className="home-hub__tile-cell">
+              <Link to={tile.to} className="home-hub__tile">
+                <div className="home-hub__tile-media">
+                  <img
+                    className="home-hub__tile-img"
+                    src={tile.image}
+                    alt=""
+                    width={400}
+                    height={225}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="home-hub__tile-glyph" aria-hidden>
+                    <HubTileGlyph name={tile.glyph} />
+                  </span>
+                </div>
+                <div className="home-hub__tile-body">
+                  <h3 className="home-hub__tile-title">{tile.title}</h3>
+                  <p className="home-hub__tile-blurb">{tile.blurb}</p>
+                  <span className="home-hub__tile-cta">
+                    Open
+                    <span className="home-hub__tile-chev" aria-hidden>
+                      ›
+                    </span>
+                  </span>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
     </>
   );

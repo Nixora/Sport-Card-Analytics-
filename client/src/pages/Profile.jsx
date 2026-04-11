@@ -167,7 +167,7 @@ function PublicProfilePage() {
     <div className="cards-page cards-page--light profile-page profile-page--public">
       <PageHelmet
         breadcrumb="profile"
-        description={profile?.display_name ? `${profile.display_name} on Nixsor` : "Member profile"}
+        description={profile?.display_name ? `${profile.display_name} on Nixsora` : "Member profile"}
       />
 
       <ProfileBackBar onBack={onBack} />
@@ -357,7 +357,7 @@ function MyProfilePage() {
 
   return (
     <div className="cards-page cards-page--light profile-page">
-      <PageHelmet breadcrumb="profile" description="Your Nixsor profile and preferences." />
+      <PageHelmet breadcrumb="profile" description="Your Nixsora profile and preferences." />
 
       {!user && loading ? (
         <p className="muted">Loading…</p>

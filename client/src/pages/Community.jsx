@@ -10,7 +10,7 @@ import {
 } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const COMMUNITY_NAME = "Nixsor Community";
+const COMMUNITY_NAME = "Nixsora Community";
 const ROLE_LABEL = "Collector";
 
 function fmtWhen(iso) {

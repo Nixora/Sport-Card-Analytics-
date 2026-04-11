@@ -49,9 +49,9 @@ export default function SiteFooter() {
               <h2 className="site-footer__heading">Looking for more?</h2>
               <ul className="site-footer__list">
                 <li>
-                  <a className="site-footer__link" href="#faq">
+                  <Link className="site-footer__link" to="/faq">
                     FAQ
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/">
@@ -64,13 +64,8 @@ export default function SiteFooter() {
                   </a>
                 </li>
                 <li>
-                  <a className="site-footer__link" href="#sell">
-                    Sell
-                  </a>
-                </li>
-                <li>
                   <Link className="site-footer__link" to="/premium">
-                    Premium
+                    Pricing
                   </Link>
                 </li>
                 <li>
@@ -79,18 +74,18 @@ export default function SiteFooter() {
                   </Link>
                 </li>
                 <li>
-                  <a className="site-footer__link" href="#privacy">
+                  <Link className="site-footer__link" to="/privacy-policy">
                     Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a className="site-footer__link" href="#copyright">
-                    Copyright Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/community">
                     Community
+                  </Link>
+                </li>
+                <li>
+                  <Link className="site-footer__link" to="/contact">
+                    Contact us
                   </Link>
                 </li>
               </ul>
@@ -99,8 +94,13 @@ export default function SiteFooter() {
             <div className="site-footer__col">
               <h2 className="site-footer__heading">Contact us</h2>
               <p className="site-footer__contact-cta">
+                <Link className="site-footer__contact-cta-link" to="/contact">
+                  Contact page
+                </Link>
+              </p>
+              <p className="site-footer__contact-cta">
                 <a className="site-footer__contact-cta-link" href="mailto:support@example.com">
-                  Click here for help!
+                  support@example.com
                 </a>
               </p>
               <p className="site-footer__contact-label">Location</p>
@@ -112,7 +112,7 @@ export default function SiteFooter() {
             </div>
 
             <div className="site-footer__col">
-              <h2 className="site-footer__heading">Nixsor</h2>
+              <h2 className="site-footer__heading">Nixsora</h2>
               <p className="site-footer__rights">© {year} All Rights Reserved.</p>
               <div className="site-footer__stores">
                 <a

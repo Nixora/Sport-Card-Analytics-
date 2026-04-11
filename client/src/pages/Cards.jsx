@@ -111,7 +111,7 @@ export default function Cards() {
     <div className="cards-page cards-page--light">
       <PageHelmet
         breadcrumb="marketplace"
-        description="Browse cards, compare asking prices from your ingest sample, filters, and table view on Nixsor."
+        description="Browse cards, compare asking prices from your ingest sample, filters, and table view on Nixsora."
       />
       {err && <p className="err">{err}</p>}
       {!data && !err && <p className="muted">Loading…</p>}

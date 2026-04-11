@@ -12,6 +12,9 @@ import Premium from "./pages/Premium.jsx";
 import Sellers from "./pages/Sellers.jsx";
 import SellerProfile from "./pages/SellerProfile.jsx";
 import Profile from "./pages/Profile.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import Contact from "./pages/Contact.jsx";
+import FAQ from "./pages/FAQ.jsx";
 
 function RedirectAnalyticsToCard() {
   const { cardKey } = useParams();
@@ -64,13 +67,17 @@ export default function App() {
     normalizedPath === "/community" ||
     normalizedPath === "/community/new" ||
     normalizedPath.startsWith("/community/");
+  const privacyShellRoute =
+    normalizedPath === "/privacy-policy" ||
+    normalizedPath === "/contact" ||
+    normalizedPath === "/faq";
 
   return (
     <div ref={layoutRef} className="layout">
       <SiteHeader ref={headerRef} />
       <main className={`site-main${isHome ? " site-main--home" : ""}`} id="main-content">
         <div
-          className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}`}
+          className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}${privacyShellRoute ? " content-shell--privacy" : ""}`}
         >
           {showBodyPath && <p className="body-path-label">{bodyPathLabel}</p>}
           <Routes>
@@ -86,6 +93,9 @@ export default function App() {
             <Route path="/seller-analysis" element={<Sellers />} />
             <Route path="/sellers/:sellerUsername" element={<SellerProfile />} />
             <Route path="/premium" element={<Premium />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
             <Route path="/community/new" element={<CommunityNew />} />
             <Route path="/community/:articleId" element={<Community />} />
             <Route path="/community" element={<Community />} />

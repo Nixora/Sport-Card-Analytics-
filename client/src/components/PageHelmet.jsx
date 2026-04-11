@@ -1,8 +1,8 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE = "Nixsor";
+const SITE = "Nixsora";
 
-/** Home: `title · Nixsor`. Other routes: `home / breadcrumb · Nixsor` (breadcrumb = path-style segments, e.g. `marketplace` or `marketplace / card-key`). */
+/** Home: `title · Nixsora`. Other routes: `home / breadcrumb · Nixsora` (breadcrumb = path-style segments, e.g. `marketplace` or `marketplace / card-key`). */
 export default function PageHelmet({ title, description, isHome, breadcrumb }) {
   let fullTitle = SITE;
   if (isHome) {
@@ -20,7 +20,7 @@ export default function PageHelmet({ title, description, isHome, breadcrumb }) {
       ) : (
         <meta
           name="description"
-          content="Nixsor — compare sports card prices across marketplaces, analytics, alerts, and community."
+          content="Nixsora — compare sports card prices across marketplaces, analytics, alerts, and community."
         />
       )}
     </Helmet>
