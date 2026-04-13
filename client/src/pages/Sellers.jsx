@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
 import { fetchSellers } from "../api.js";
 
@@ -183,7 +184,7 @@ export default function Sellers() {
       />
 
       {err && <p className="err">{err}</p>}
-      {!data && !err && <p className="muted">Loading…</p>}
+      {!data && !err && <DataLoading />}
 
       {data && sellers.length === 0 && <p className="muted">No seller rows found yet.</p>}
 

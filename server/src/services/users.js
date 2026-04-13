@@ -30,6 +30,7 @@ async function ensureUserIndexes(db) {
   const c = usersCol(db);
   await c.createIndex({ email: 1 }, { unique: true });
   await c.createIndex({ display_name_lc: 1 }, { unique: true, sparse: true });
+  await c.createIndex({ "password_reset.lookup_hash": 1 }, { unique: true, sparse: true });
 }
 
 /** @param {unknown} raw */
@@ -64,10 +65,10 @@ function parseDisplayName(raw) {
 }
 
 /**
- * @param {import('mongodb').Db} db
- * @param {{ email: string, password: string, display_name: string }} input
+ * Validates email/password/display name and checks they are not already registered.
+ * @returns {Promise<{ email: string, password_hash: string, display_name: string, display_name_lc: string }>}
  */
-async function createUser(db, input) {
+async function buildValidatedSignupPayload(db, input) {
   const email = String(input.email || "")
     .trim()
     .toLowerCase();
@@ -85,12 +86,36 @@ async function createUser(db, input) {
 
   const { display_name, display_name_lc } = parseDisplayName(input.display_name);
 
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  const existingEmail = await usersCol(db).findOne({ email }, { projection: { _id: 1 } });
+  if (existingEmail) {
+    const e = new Error("An account with this email already exists");
+    e.status = 409;
+    throw e;
+  }
+
+  const takenName = await usersCol(db).findOne(
+    { display_name_lc },
+    { projection: { _id: 1 } }
+  );
+  if (takenName) {
+    const e = new Error("This display name is already taken");
+    e.status = 409;
+    throw e;
+  }
+
+  const password_hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  return { email, password_hash, display_name, display_name_lc };
+}
+
+/**
+ * Inserts a user row from a verified sign-up payload (password already hashed).
+ */
+async function insertUserFromSignupPayload(db, payload) {
   const doc = {
-    email,
-    password_hash: passwordHash,
-    display_name,
-    display_name_lc,
+    email: payload.email,
+    password_hash: payload.password_hash,
+    display_name: payload.display_name,
+    display_name_lc: payload.display_name_lc,
     is_ebay_seller: false,
     ebay_seller_username: null,
     favorite_athletes: [],
@@ -118,6 +143,15 @@ async function createUser(db, input) {
     }
     throw err;
   }
+}
+
+/**
+ * @param {import('mongodb').Db} db
+ * @param {{ email: string, password: string, display_name: string }} input
+ */
+async function createUser(db, input) {
+  const core = await buildValidatedSignupPayload(db, input);
+  return insertUserFromSignupPayload(db, core);
 }
 
 /**
@@ -359,9 +393,83 @@ function getImageBuffer(user, imageId) {
   };
 }
 
+function oidOrThrow(userId) {
+  try {
+    return new ObjectId(userId);
+  } catch {
+    const e = new Error("Invalid user");
+    e.status = 400;
+    throw e;
+  }
+}
+
+/**
+ * @param {import('mongodb').Db} db
+ * @param {string} userId
+ * @param {{ lookup_hash: string, expires_at: Date }} reset
+ */
+async function setPasswordResetOnUser(db, userId, reset) {
+  const oid = oidOrThrow(userId);
+  await usersCol(db).updateOne(
+    { _id: oid },
+    { $set: { password_reset: reset, updated_at: new Date() } }
+  );
+}
+
+async function findUserByPasswordResetLookupHash(db, lookupHash) {
+  const h = String(lookupHash || "").trim();
+  if (!h) return null;
+  return usersCol(db).findOne({ "password_reset.lookup_hash": h });
+}
+
+async function clearPasswordResetOnUser(db, userId) {
+  const oid = oidOrThrow(userId);
+  await usersCol(db).updateOne(
+    { _id: oid },
+    { $unset: { password_reset: "" }, $set: { updated_at: new Date() } }
+  );
+}
+
+/**
+ * @param {import('mongodb').Db} db
+ * @param {string} userId
+ * @param {string} newPasswordPlain
+ */
+async function updateUserPasswordPlain(db, userId, newPasswordPlain) {
+  const password = String(newPasswordPlain || "");
+  if (password.length < 8) {
+    const e = new Error("Password must be at least 8 characters");
+    e.status = 400;
+    throw e;
+  }
+  const oid = oidOrThrow(userId);
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  const ur = await usersCol(db).updateOne(
+    { _id: oid },
+    {
+      $set: { password_hash: passwordHash, updated_at: new Date() },
+      $unset: { login_otp: "", password_reset: "", password_reset_otp: "" },
+    }
+  );
+  if (ur.matchedCount === 0) {
+    const e = new Error("User not found");
+    e.status = 404;
+    throw e;
+  }
+  const next = await findUserById(db, userId);
+  if (!next) {
+    const e = new Error("User not found");
+    e.status = 404;
+    throw e;
+  }
+  return next;
+}
+
 module.exports = {
   ensureUserIndexes,
   createUser,
+  buildValidatedSignupPayload,
+  insertUserFromSignupPayload,
   findUserByEmail,
   findUserById,
   findUserByDisplayNameLc,
@@ -370,6 +478,10 @@ module.exports = {
   getImageBuffer,
   updateUserProfile,
   setUserAvatar,
+  setPasswordResetOnUser,
+  findUserByPasswordResetLookupHash,
+  clearPasswordResetOnUser,
+  updateUserPasswordPlain,
   splitList,
   ALLOWED_IMAGE_MIME,
   AVATAR_MAX_BYTES,

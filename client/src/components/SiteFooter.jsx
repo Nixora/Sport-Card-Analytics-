@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function IconChat() {
   return (
@@ -37,6 +38,7 @@ function IconPlay() {
 }
 
 export default function SiteFooter() {
+  const { t } = useLanguage();
   const year = new Date().getFullYear();
   const [chatVisible, setChatVisible] = useState(true);
 
@@ -46,56 +48,56 @@ export default function SiteFooter() {
         <div className="site-footer__inner">
           <div className="site-footer__grid">
             <div className="site-footer__col">
-              <h2 className="site-footer__heading">Looking for more?</h2>
+              <h2 className="site-footer__heading">{t("footer.lookingMore")}</h2>
               <ul className="site-footer__list">
                 <li>
                   <Link className="site-footer__link" to="/faq">
-                    FAQ
+                    {t("footer.faq")}
                   </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/">
-                    About
+                    {t("footer.about")}
                   </Link>
                 </li>
                 <li>
                   <a className="site-footer__link" href="#careers">
-                    Careers
+                    {t("footer.careers")}
                   </a>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/premium">
-                    Pricing
+                    {t("footer.pricing")}
                   </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/comparison-alert">
-                    Price alerts
+                    {t("footer.priceAlerts")}
                   </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/privacy-policy">
-                    Privacy Policy
+                    {t("footer.privacyPolicy")}
                   </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/community">
-                    Community
+                    {t("footer.community")}
                   </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/contact">
-                    Contact us
+                    {t("footer.contactUs")}
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div className="site-footer__col">
-              <h2 className="site-footer__heading">Contact us</h2>
+              <h2 className="site-footer__heading">{t("footer.contactHeading")}</h2>
               <p className="site-footer__contact-cta">
                 <Link className="site-footer__contact-cta-link" to="/contact">
-                  Contact page
+                  {t("footer.contactPage")}
                 </Link>
               </p>
               <p className="site-footer__contact-cta">
@@ -103,7 +105,7 @@ export default function SiteFooter() {
                   support@example.com
                 </a>
               </p>
-              <p className="site-footer__contact-label">Location</p>
+              <p className="site-footer__contact-label">{t("footer.location")}</p>
               <address className="site-footer__address">
                 1095 E. Salter Drive
                 <br />
@@ -112,31 +114,31 @@ export default function SiteFooter() {
             </div>
 
             <div className="site-footer__col">
-              <h2 className="site-footer__heading">Nixsora</h2>
-              <p className="site-footer__rights">© {year} All Rights Reserved.</p>
+              <h2 className="site-footer__heading">{t("footer.brand")}</h2>
+              <p className="site-footer__rights">{t("footer.rights", { year })}</p>
               <div className="site-footer__stores">
                 <a
                   className="site-footer__store-badge"
                   href="#app-store"
-                  aria-label="Download on the App Store"
+                  aria-label={t("footer.ariaAppStore")}
                 >
                   <IconApple />
                   <span className="site-footer__store-text">
-                    <span className="site-footer__store-line site-footer__store-line--sm">Download on the</span>
-                    <span className="site-footer__store-line site-footer__store-line--lg">App Store</span>
+                    <span className="site-footer__store-line site-footer__store-line--sm">{t("footer.appStoreLine1")}</span>
+                    <span className="site-footer__store-line site-footer__store-line--lg">{t("footer.appStoreLine2")}</span>
                   </span>
                 </a>
                 <a
                   className="site-footer__store-badge site-footer__store-badge--play"
                   href="#google-play"
-                  aria-label="Get it on Google Play"
+                  aria-label={t("footer.ariaPlay")}
                 >
                   <IconPlay />
                   <span className="site-footer__store-text">
                     <span className="site-footer__store-line site-footer__store-line--sm site-footer__store-line--caps">
-                      Get it on
+                      {t("footer.playLine1")}
                     </span>
-                    <span className="site-footer__store-line site-footer__store-line--lg">Google Play</span>
+                    <span className="site-footer__store-line site-footer__store-line--lg">{t("footer.playLine2")}</span>
                   </span>
                 </a>
               </div>
@@ -144,31 +146,29 @@ export default function SiteFooter() {
           </div>
 
           <div className="site-footer__fine-print">
-            <p className="site-footer__fine-print-line">
-              Median asks from sampled listings, not sold FMV. Data depends on your ingest schedule and search query.
-            </p>
-            <p className="site-footer__fine-print-line">Not affiliated with eBay.</p>
+            <p className="site-footer__fine-print-line">{t("footer.finePrint1")}</p>
+            <p className="site-footer__fine-print-line">{t("footer.finePrint2")}</p>
           </div>
         </div>
       </footer>
 
       {chatVisible && (
-        <div className="footer-chat" role="complementary" aria-label="Help chat prompt">
+        <div className="footer-chat" role="complementary" aria-label={t("footer.chatAria")}>
           <button
             type="button"
             className="footer-chat__close"
-            aria-label="Dismiss help prompt"
+            aria-label={t("footer.dismissChat")}
             onClick={() => setChatVisible(false)}
           >
             <span aria-hidden>×</span>
           </button>
           <div className="footer-chat__row">
-            <p className="footer-chat__bubble">Hi. Need any help?</p>
+            <p className="footer-chat__bubble">{t("footer.chatBubble")}</p>
             <a
               className="footer-chat__button"
               href="mailto:support@example.com"
-              title="Get help"
-              aria-label="Get help by email"
+              title={t("footer.getHelpTitle")}
+              aria-label={t("footer.getHelpEmail")}
             >
               <IconChat />
             </a>

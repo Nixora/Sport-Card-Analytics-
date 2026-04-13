@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import heroFaqImg from "../assets/features/feature-compare.jpg";
 import bannerAlertsImg from "../assets/features/feature-alerts.jpg";
 
@@ -72,104 +74,54 @@ function IconUser({ className }) {
   );
 }
 
-const SECTIONS = [
-  {
-    id: "marketplace",
-    title: "Marketplace & search",
-    Icon: IconMarket,
-    items: [
-      {
-        q: "What is the marketplace?",
-        a: "The marketplace is where you browse cards from your ingested sample, compare asking prices across sources, and open detail pages for trends and filters. It is not a checkout cart — we surface analytics, not live checkout with sellers.",
-      },
-      {
-        q: "Why do prices differ from what I see on eBay or an auction house?",
-        a: "Listings change constantly. Nixsora reflects the data you have ingested and when it was last updated. Medians and samples depend on your query, filters, and ingest schedule — not real-time sold prices everywhere.",
-      },
-      {
-        q: "Can I compare the same card across multiple marketplaces?",
-        a: "Yes, that is the core idea. Use marketplace filters and comparison views where available. Coverage depends on which sources you have connected and how card keys are normalized in your setup.",
-      },
-    ],
-  },
-  {
-    id: "data",
-    title: "Data & accuracy",
-    Icon: IconData,
-    items: [
-      {
-        q: "Is this financial or investment advice?",
-        a: "No. Charts and alerts are informational. Card markets are volatile; always do your own research before buying or selling.",
-      },
-      {
-        q: "What does “median ask” mean here?",
-        a: "Typically it is a median of asking prices from listings in your current sample, not a guaranteed fair market value (FMV) for sold cards. Wording on the product may vary as we refine labels.",
-      },
-      {
-        q: "Are you affiliated with eBay or other marketplaces?",
-        a: "No. Nixsora is independent. We may display data that originated from public listings according to your configuration, but we are not endorsed by those platforms unless stated otherwise.",
-      },
-    ],
-  },
-  {
-    id: "alerts",
-    title: "Alerts & Premium",
-    Icon: IconBell,
-    items: [
-      {
-        q: "How do price alerts work?",
-        a: "You configure thresholds or saved searches (where the product supports them). When new data matches your rules, we can notify you by email or in-app, depending on your plan and settings.",
-      },
-      {
-        q: "What is Premium?",
-        a: "Premium is a planned tier with more alerts, history, and seats for teams. The Premium page shows placeholder plans until billing is connected.",
-      },
-    ],
-  },
-  {
-    id: "account",
-    title: "Account, privacy & support",
-    Icon: IconUser,
-    items: [
-      {
-        q: "How do I change my profile or password?",
-        a: "Open Profile from the header when signed in. Use the edit flow there to update display name, tags, or avatar where supported. Password changes follow the same auth settings your deployment uses.",
-      },
-      {
-        q: "Where is your Privacy Policy?",
-        a: (
-          <>
-            See our{" "}
-            <Link className="faq-page__inline-link" to="/privacy-policy">
-              Privacy Policy
-            </Link>{" "}
-            for how we handle personal information.
-          </>
-        ),
-      },
-      {
-        q: "Who can I contact for help?",
-        a: (
-          <>
-            Visit{" "}
-            <Link className="faq-page__inline-link" to="/contact">
-              Contact
-            </Link>{" "}
-            for email and the message form, or write to the support address shown there.
-          </>
-        ),
-      },
-    ],
-  },
-];
+const SECTION_ICONS = {
+  marketplace: IconMarket,
+  data: IconData,
+  alerts: IconBell,
+  account: IconUser,
+};
+
+function FaqAnswer({ item }) {
+  if (item?.a && typeof item.a === "string") return item.a;
+  if (item?.aLinkPrivacy) {
+    return (
+      <>
+        {item.aBefore}
+        <Link className="faq-page__inline-link" to="/privacy-policy">
+          {item.aLinkPrivacy}
+        </Link>
+        {item.aAfter}
+      </>
+    );
+  }
+  if (item?.aLinkContact) {
+    return (
+      <>
+        {item.aBefore}
+        <Link className="faq-page__inline-link" to="/contact">
+          {item.aLinkContact}
+        </Link>
+        {item.aAfter}
+      </>
+    );
+  }
+  return null;
+}
 
 export default function FAQ() {
+  const { t, tx } = useLanguage();
+  const sections = useMemo(() => {
+    const raw = tx("faq.sections");
+    if (!Array.isArray(raw)) return [];
+    return raw.map((s) => ({
+      ...s,
+      Icon: SECTION_ICONS[s.id] || IconFaqMark,
+    }));
+  }, [tx]);
+
   return (
     <div className="faq-page">
-      <PageHelmet
-        breadcrumb="faq"
-        description="Frequently asked questions about Nixsora — marketplace, data, alerts, Premium, and support."
-      />
+      <PageHelmet breadcrumb="faq" description={t("faq.helmetDescription")} />
 
       <header className="faq-page__header">
         <div className="faq-page__hero-wrap">
@@ -178,7 +130,7 @@ export default function FAQ() {
             src={heroFaqImg}
             width={960}
             height={540}
-            alt="Marketplace comparison and card listings in Nixsora."
+            alt={t("faq.heroAlt")}
             decoding="async"
           />
         </div>
@@ -186,14 +138,12 @@ export default function FAQ() {
           <span className="faq-page__title-icon" aria-hidden>
             <IconFaqMark className="faq-page__svg" />
           </span>
-          <h1 className="faq-page__title">Frequently asked questions</h1>
+          <h1 className="faq-page__title">{t("faq.title")}</h1>
         </div>
-        <p className="faq-page__lede muted">
-          Quick answers about the marketplace, how we show prices, alerts, and your account. For legal terms, use the Privacy Policy; for one-on-one help, use Contact.
-        </p>
+        <p className="faq-page__lede muted">{t("faq.lede")}</p>
 
-        <nav className="faq-page__jump" aria-label="FAQ sections">
-          {SECTIONS.map((s) => (
+        <nav className="faq-page__jump" aria-label={t("faq.jumpLabel")}>
+          {sections.map((s) => (
             <a key={s.id} className="faq-page__jump-link" href={`#${s.id}`}>
               {s.title}
             </a>
@@ -214,12 +164,12 @@ export default function FAQ() {
           <span className="faq-page__banner-icon" aria-hidden>
             <IconBell className="faq-page__svg" />
           </span>
-          <p className="faq-page__banner-text">Stay ahead with alerts when your saved criteria match new listings.</p>
+          <p className="faq-page__banner-text">{t("faq.bannerText")}</p>
         </div>
       </div>
 
       <div className="faq-page__sections">
-        {SECTIONS.map((section) => {
+        {sections.map((section) => {
           const CatIcon = section.Icon;
           return (
             <section key={section.id} id={section.id} className="faq-page__section" aria-labelledby={`faq-h-${section.id}`}>
@@ -248,7 +198,9 @@ export default function FAQ() {
                       </span>
                       {item.q}
                     </summary>
-                    <div className="faq-page__answer">{item.a}</div>
+                    <div className="faq-page__answer">
+                      <FaqAnswer item={item} />
+                    </div>
                   </details>
                 ))}
               </div>
@@ -262,21 +214,21 @@ export default function FAQ() {
           <IconFaqMark className="faq-page__svg faq-page__svg--sm" />
         </span>
         <span>
-          Still stuck?{" "}
+          {t("faq.footerStill")}{" "}
           <Link className="faq-page__inline-link" to="/contact">
-            Send us a message
+            {t("faq.footerSend")}
           </Link>{" "}
-          or ask in{" "}
+          {t("faq.footerOrAsk")}{" "}
           <Link className="faq-page__inline-link" to="/community">
-            Community
+            {t("header.navCommunity")}
           </Link>
-          .
+          {t("faq.footerEnd")}
         </span>
       </p>
 
       <p className="faq-page__back muted">
         <Link className="faq-page__back-link" to="/">
-          ← Back to home
+          {t("common.backHome")}
         </Link>
       </p>
     </div>

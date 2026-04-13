@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { fetchCards } from "../api.js";
 
 function safeImgUrl(u) {
@@ -105,6 +107,7 @@ function fmtScore(v) {
 }
 
 export default function Alerts() {
+  const { t } = useLanguage();
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [page, setPage] = useState(1);
@@ -171,21 +174,14 @@ export default function Alerts() {
 
   return (
     <div className="cards-page cards-page--light" style={{ paddingBottom: 18 }}>
-      <PageHelmet
-        breadcrumb="comparison-alert"
-        description="Compare eBay asking price with Vinted and Catawiki discovery prices."
-      />
+      <PageHelmet breadcrumb="comparison-alert" description={t("alerts.helmetDescription")} />
       {err && <p className="err">{err}</p>}
-      {!data && !err && <p className="muted">Loading…</p>}
+      {!data && !err && <DataLoading />}
 
-      {data && rows.length === 0 && (
-        <p className="muted">
-          No compare rows found yet. Run the marketplace-first ingest so `compare_vinted` / `compare_catawiki` exist.
-        </p>
-      )}
+      {data && rows.length === 0 && <p className="muted">{t("alerts.empty")}</p>}
 
       {data && rows.length > 0 && (
-        <div className="mp-list" role="list" aria-label="Comparison rows">
+        <div className="mp-list" role="list" aria-label={t("alerts.listAria")}>
           {rows.map((r) => {
             const detailTo = `/cards/${encodeURIComponent(r.card_key)}`;
             const ebayLabel =
@@ -194,36 +190,36 @@ export default function Alerts() {
               <article key={r.card_key} className="mp-row" role="listitem">
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    <span className="mp-pill mp-pill--muted" title="Source">
-                      eBay
+                    <span className="mp-pill mp-pill--muted" title={t("alerts.source")}>
+                      {t("alerts.ebay")}
                     </span>
-                    <div className="mp-row__thumb" title="eBay image">
+                    <div className="mp-row__thumb" title={t("alerts.ebayImage")}>
                       {r.ebayUrl ? (
                         <a
                           className="mp-row__thumb-link"
                           href={r.ebayUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          title="Open eBay listing"
-                          aria-label="Open eBay listing"
+                          title={t("alerts.openEbayListing")}
+                          aria-label={t("alerts.openEbayListing")}
                         >
                           {r.ebayImg ? (
                             <img src={r.ebayImg} alt="" loading="lazy" />
                           ) : (
-                            <span className="mp-row__thumb-placeholder">No eBay image</span>
+                            <span className="mp-row__thumb-placeholder">{t("alerts.noEbayImage")}</span>
                           )}
                         </a>
                       ) : (
                         <Link
                           className="mp-row__thumb-link"
                           to={detailTo}
-                          title="Open card detail"
-                          aria-label="Open card detail"
+                          title={t("alerts.openCardDetail")}
+                          aria-label={t("alerts.openCardDetail")}
                         >
                           {r.ebayImg ? (
                             <img src={r.ebayImg} alt="" loading="lazy" />
                           ) : (
-                            <span className="mp-row__thumb-placeholder">No eBay image</span>
+                            <span className="mp-row__thumb-placeholder">{t("alerts.noEbayImage")}</span>
                           )}
                         </Link>
                       )}
@@ -232,15 +228,15 @@ export default function Alerts() {
 
                   {r.vintedImg ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <span className="mp-pill mp-pill--muted" title="Source">
-                        Vinted
+                      <span className="mp-pill mp-pill--muted" title={t("alerts.source")}>
+                        {t("alerts.vinted")}
                       </span>
-                      <div className="mp-row__thumb" title="Vinted image">
+                      <div className="mp-row__thumb" title={`${t("alerts.vinted")} ${t("alerts.ebayImage")}`}>
                         <a
                           href={r.vintedImg}
                           target="_blank"
                           rel="noopener noreferrer"
-                          aria-label="Open Vinted image"
+                          aria-label={t("alerts.openVintedImage")}
                           style={{ display: "block", width: "100%", height: "100%" }}
                         >
                           <img src={r.vintedImg} alt="" loading="lazy" />
@@ -251,15 +247,15 @@ export default function Alerts() {
 
                   {r.catawikiImg ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <span className="mp-pill mp-pill--muted" title="Source">
-                        Catawiki
+                      <span className="mp-pill mp-pill--muted" title={t("alerts.source")}>
+                        {t("alerts.catawiki")}
                       </span>
-                      <div className="mp-row__thumb" title="Catawiki image">
+                      <div className="mp-row__thumb" title={`${t("alerts.catawiki")} ${t("alerts.ebayImage")}`}>
                         <a
                           href={r.catawikiImg}
                           target="_blank"
                           rel="noopener noreferrer"
-                          aria-label="Open Catawiki image"
+                          aria-label={t("alerts.openCatawikiImage")}
                           style={{ display: "block", width: "100%", height: "100%" }}
                         >
                           <img src={r.catawikiImg} alt="" loading="lazy" />
@@ -273,35 +269,39 @@ export default function Alerts() {
                     {r.title}
                   </Link>
                   <p className="mp-row__sub muted">
-                    {r.updatedAt ? `Compare updated ${new Date(r.updatedAt).toISOString().slice(0, 10)}` : "—"}
+                    {r.updatedAt
+                      ? t("alerts.compareUpdated", {
+                          date: new Date(r.updatedAt).toISOString().slice(0, 10),
+                        })
+                      : "—"}
                   </p>
 
                   <div className="mp-row__pills">
-                    <span className="mp-pill mp-pill--muted" title="eBay latest median ask">
-                      eBay: {ebayLabel}
+                    <span className="mp-pill mp-pill--muted" title={t("alerts.titleEbayMedianAsk")}>
+                      {t("alerts.pillEbay", { v: ebayLabel })}
                     </span>
                     {r.vinted && (
                       <>
-                        <span className="mp-pill mp-pill--muted" title="Vinted listing price">
-                          Vinted: {fmtMoney(r.vintedPrice)}
+                        <span className="mp-pill mp-pill--muted" title={t("alerts.vintedPriceTitle")}>
+                          {t("alerts.pillVinted", { v: fmtMoney(r.vintedPrice) })}
                         </span>
-                        <span className="mp-pill mp-pill--slate" title="Vinted match score">
-                          Match score: {fmtScore(r.vintedScore)}
+                        <span className="mp-pill mp-pill--slate" title={t("alerts.matchScoreTitle")}>
+                          {t("alerts.matchScore", { v: fmtScore(r.vintedScore) })}
                         </span>
-                        <span className="mp-pill mp-pill--muted" title="Vinted likes">
+                        <span className="mp-pill mp-pill--muted" title={t("alerts.titleVintedLikes")}>
                           ♥ {Number(r.vinted.likes || 0)}
                         </span>
                       </>
                     )}
                     {r.catawiki && (
                       <>
-                        <span className="mp-pill mp-pill--muted" title="Catawiki listing price">
-                          Catawiki: {fmtMoney(r.catawikiPrice)}
+                        <span className="mp-pill mp-pill--muted" title={t("alerts.catawikiPriceTitle")}>
+                          {t("alerts.pillCatawiki", { v: fmtMoney(r.catawikiPrice) })}
                         </span>
-                        <span className="mp-pill mp-pill--slate" title="Catawiki match score">
-                          Match score: {fmtScore(r.catawikiScore)}
+                        <span className="mp-pill mp-pill--slate" title={t("alerts.matchScoreTitle")}>
+                          {t("alerts.matchScore", { v: fmtScore(r.catawikiScore) })}
                         </span>
-                        <span className="mp-pill mp-pill--muted" title="Catawiki likes">
+                        <span className="mp-pill mp-pill--muted" title={t("alerts.titleCatawikiLikes")}>
                           ♥ {Number(r.catawiki.likes || 0)}
                         </span>
                       </>
@@ -315,8 +315,9 @@ export default function Alerts() {
                       });
                       if (!s) return null;
                       return (
-                        <span className="mp-pill mp-pill--green" title="eBay − Vinted (same currency only)">
-                          Δ Vinted: {fmtDelta(s.delta, s.currency)}{s.fx ? " (FX est)" : ""}
+                        <span className="mp-pill mp-pill--green" title={t("alerts.titleSpreadVinted")}>
+                          {t("alerts.spreadVintedPrefix")} {fmtDelta(s.delta, s.currency)}
+                          {s.fx ? t("alerts.fxEst") : ""}
                           {s.pct != null ? ` (${s.pct > 0 ? "+" : ""}${s.pct}%)` : ""}
                         </span>
                       );
@@ -330,8 +331,9 @@ export default function Alerts() {
                       });
                       if (!s) return null;
                       return (
-                        <span className="mp-pill mp-pill--green" title="eBay − Catawiki (same currency only)">
-                          Δ Catawiki: {fmtDelta(s.delta, s.currency)}{s.fx ? " (FX est)" : ""}
+                        <span className="mp-pill mp-pill--green" title={t("alerts.titleSpreadCatawiki")}>
+                          {t("alerts.spreadCatawikiPrefix")} {fmtDelta(s.delta, s.currency)}
+                          {s.fx ? t("alerts.fxEst") : ""}
                           {s.pct != null ? ` (${s.pct > 0 ? "+" : ""}${s.pct}%)` : ""}
                         </span>
                       );
@@ -343,9 +345,9 @@ export default function Alerts() {
                         href={r.ebayUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Open eBay listing"
+                        title={t("alerts.openEbayListing")}
                       >
-                        Open eBay
+                        {t("alerts.openEbayShort")}
                       </a>
                     )}
                     {r.vinted?.url && (
@@ -354,9 +356,9 @@ export default function Alerts() {
                         href={r.vinted.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Open Vinted listing"
+                        title={`${t("alerts.openVintedShort")} — Vinted`}
                       >
-                        Open Vinted
+                        {t("alerts.openVintedShort")}
                       </a>
                     )}
                     {r.catawiki?.url && (
@@ -365,9 +367,9 @@ export default function Alerts() {
                         href={r.catawiki.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Open Catawiki listing"
+                        title={`${t("alerts.openCatawikiShort")} — Catawiki`}
                       >
-                        Open Catawiki
+                        {t("alerts.openCatawikiShort")}
                       </a>
                     )}
                   </div>
@@ -378,14 +380,14 @@ export default function Alerts() {
         </div>
       )}
 
-      <div className="floating-pager" aria-label="Pagination">
+      <div className="floating-pager" aria-label={t("common.pagination")}>
         <button
           type="button"
           className="hero-btn hero-btn--outline"
           disabled={page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         >
-          Prev
+          {t("common.prev")}
         </button>
 
         <span className="floating-pager__meta">{page}/{totalPages}</span>
@@ -396,7 +398,7 @@ export default function Alerts() {
           disabled={page >= totalPages}
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
         >
-          Next
+          {t("common.next")}
         </button>
       </div>
     </div>

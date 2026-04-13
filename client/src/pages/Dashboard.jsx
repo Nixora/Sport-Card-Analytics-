@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
+import CookieConsentBanner from "../components/CookieConsentBanner.jsx";
 import HeroHeadlineTypewriter from "../components/HeroHeadlineTypewriter.jsx";
 import HeroSourceImageFlow from "../components/HeroSourceImageFlow.jsx";
 import heroPlatformImg from "../assets/hero-platform.png";
@@ -22,6 +24,33 @@ import featureCommunityImg from "../assets/features/feature-community.jpg";
 import featureResearchImg from "../assets/features/feature-research.jpg";
 import featurePremiumImg from "../assets/features/feature-premium.jpg";
 import communityTeamImg from "../assets/community-team.jpg";
+
+const WHY_IMAGE_BY_ID = {
+  realtime: whyRealtimeImg,
+  compare: whyCompareImg,
+  alerts: whyAlertsImg,
+  forecast: whyForecastImg,
+  portfolio: whyPortfolioImg,
+};
+
+const HUB_IMAGE_BY_TO = {
+  "/marketplace": featureCompareImg,
+  "/comparison-alert": featureAlertsImg,
+  "/seller-analysis": featureResearchImg,
+  "/premium": featurePremiumImg,
+  "/community": featureCommunityImg,
+  "/faq": featureAnalyticsImg,
+  "/privacy-policy": featureGradingImg,
+  "/contact": communityTeamImg,
+};
+
+const FEATURE_IMAGE_BY_ID = {
+  compare: featureCompareImg,
+  analytics: featureAnalyticsImg,
+  alerts: featureAlertsImg,
+  grading: featureGradingImg,
+  community: featureCommunityImg,
+};
 
 /** Decorative candlesticks: 0–1 where 1 = top of chart (highest price). Not real market data. */
 const HERO_CANDLE_OHLC = [
@@ -154,98 +183,6 @@ function MarketStateIcon({ name, className = "" }) {
   }
 }
 
-const MARKET_GROWTH_ROWS = [
-  {
-    icon: "investors",
-    keyword: "Investor demand",
-    points: [
-      "Alternative-investment framing",
-      "Rare & autographed focus",
-      "Broader than hobby-only buyers",
-    ],
-  },
-  {
-    icon: "marketplaces",
-    keyword: "Online liquidity",
-    points: ["eBay, StockX, auctions", "Real-time pricing visibility", "National / global reach"],
-  },
-  {
-    icon: "grading",
-    keyword: "Grading & trust",
-    points: ["PSA, Beckett, etc.", "Standardized condition signal", "Grade tightly linked to price"],
-  },
-];
-
-const MARKET_CHALLENGE_ROWS = [
-  {
-    icon: "fragmented",
-    keyword: "No single pane of glass",
-    points: [
-      "Scattered buy/sell venues",
-      "No one place to compare prices",
-      "Cross-marketplace performance opaque",
-    ],
-  },
-  {
-    icon: "volatile",
-    keyword: "Messy price signals",
-    points: ["Wide spread by platform", "Condition changes the comp", "News & player performance noise"],
-  },
-  {
-    icon: "uncertain",
-    keyword: "Hard to call upside",
-    points: ["Which cards will run?", "Opaque drivers of demand", "Unpredictable short-term swings"],
-  },
-];
-
-const WHY_PLATFORM_CARDS = [
-  {
-    id: "realtime",
-    image: whyRealtimeImg,
-    overline: "Real-time visibility",
-    keyword: "Live prices & trends",
-    body: "Latest asks and listing context, with direction over days and weeks—so you catch moves before the window closes.",
-    tags: ["Live asks", "Listing depth", "Trend context"],
-    ctaTo: "/marketplace",
-  },
-  {
-    id: "compare",
-    image: whyCompareImg,
-    overline: "Cross-market context",
-    keyword: "Compare the same card everywhere",
-    body: "One card, many platforms—side-by-side context for clearer buy, sell, or pass decisions without juggling tabs.",
-    tags: ["Multi-market", "Side-by-side", "Comps"],
-    ctaTo: "/marketplace",
-  },
-  {
-    id: "alerts",
-    image: whyAlertsImg,
-    overline: "Stay ahead",
-    keyword: "Smart price alerts",
-    body: "Get nudges on spikes, drops, or new comps, and set targets so you can act when it matters—not after the fact.",
-    tags: ["Targets", "Notifications", "Price moves"],
-    ctaTo: "/comparison-alert",
-  },
-  {
-    id: "forecast",
-    image: whyForecastImg,
-    overline: "Modeling & framing",
-    keyword: "Predictive signals",
-    body: "Blend history with trend modeling for forward-looking ranges—not promises—so investments are easier to reason about.",
-    tags: ["Modeling", "Historical blend", "Ranges"],
-    ctaTo: "/marketplace",
-  },
-  {
-    id: "portfolio",
-    image: whyPortfolioImg,
-    overline: "Your collection",
-    keyword: "Portfolio in one view",
-    body: "Holdings, performance snapshot, and where you’re concentrated—so gaps and risk show up at a glance.",
-    tags: ["Holdings", "Performance", "Allocation"],
-    ctaTo: "/marketplace",
-  },
-];
-
 const WHY_CAROUSEL_AUTOPLAY_MS = 5500;
 
 function HubTileGlyph({ name }) {
@@ -328,130 +265,6 @@ function HubTileGlyph({ name }) {
   }
 }
 
-const HOME_HUB_TILES = [
-  {
-    to: "/marketplace",
-    title: "Marketplace",
-    blurb: "Browse cards, filters, and detail pages with cross-source context.",
-    image: featureCompareImg,
-    glyph: "marketplace",
-  },
-  {
-    to: "/comparison-alert",
-    title: "Comparison & alerts",
-    blurb: "Set targets and catch price moves while listings still matter.",
-    image: featureAlertsImg,
-    glyph: "alerts",
-  },
-  {
-    to: "/seller-analysis",
-    title: "Seller analysis",
-    blurb: "Review seller activity and patterns to size up supply and flow.",
-    image: featureResearchImg,
-    glyph: "sellers",
-  },
-  {
-    to: "/premium",
-    title: "Pricing",
-    blurb: "Compare Starter, Pro, and Team — billing arrives in a later release.",
-    image: featurePremiumImg,
-    glyph: "pricing",
-  },
-  {
-    to: "/community",
-    title: "Community",
-    blurb: "Read and share articles, threads, and research with other collectors.",
-    image: featureCommunityImg,
-    glyph: "community",
-  },
-  {
-    to: "/faq",
-    title: "FAQ",
-    blurb: "Straight answers on data, alerts, accounts, and how to get help.",
-    image: featureAnalyticsImg,
-    glyph: "faq",
-  },
-  {
-    to: "/privacy-policy",
-    title: "Privacy Policy",
-    blurb: "How Nixsora handles personal data and your choices.",
-    image: featureGradingImg,
-    glyph: "privacy",
-  },
-  {
-    to: "/contact",
-    title: "Contact",
-    blurb: "Reach the team by email or the on-page message form.",
-    image: communityTeamImg,
-    glyph: "contact",
-  },
-];
-
-/** Feature row imagery: Unsplash License (https://unsplash.com/license). Shutterstock not used (paid license). */
-const FEATURE_CARDS = [
-  {
-    id: "compare",
-    title: "Marketplace comparison",
-    summary: "Same card across major venues—fewer tabs, clearer comps.",
-    bullets: [
-      "Aggregate asks and sales context across listings.",
-      "Side-by-side view of the same card on major venues.",
-      "Less tab chaos, cleaner comp workflow.",
-    ],
-    image: featureCompareImg,
-    to: "/marketplace",
-    cta: "Open comparison",
-  },
-  {
-    id: "analytics",
-    title: "Analytics & trends",
-    summary: "Trend stats, movers, and history-aware context on every card.",
-    bullets: [
-      "Trend stats and keyword tags on any card.",
-      "Movers and listing depth on the home feed.",
-      "History-aware median asks for context.",
-    ],
-    image: featureAnalyticsImg,
-    to: "/marketplace",
-    cta: "Open a card",
-  },
-  {
-    id: "alerts",
-    title: "Smart alerts",
-    summary: "Price moves you define—notify when it matters.",
-    bullets: [
-      "Targets for spikes, drops, or new comps.",
-      "Choose what should ping you first.",
-      "Act while the window is still open.",
-    ],
-    image: featureAlertsImg,
-    to: "/comparison-alert",
-    cta: "Set alerts",
-  },
-  {
-    id: "grading",
-    title: "Grading lens",
-    summary: "PSA, BGS, and how grade ties to liquidity.",
-    bullets: [
-      "PSA, BGS, and spread between services.",
-      "Raw vs slabbed framing on the same screen.",
-      "See how grade ties to liquidity.",
-    ],
-    image: featureGradingImg,
-    to: "/marketplace",
-    cta: "Browse cards",
-  },
-  {
-    id: "community",
-    title: "Long-term partnership",
-    summary: "Shared research and notes beyond single listings.",
-    bullets: [],
-    image: featureCommunityImg,
-    to: "/community",
-    cta: "Join community",
-  },
-];
-
 /** Stock sports imagery (Unsplash License) + project assets; swap files in /assets anytime. */
 const HERO_FLOATING_CARDS = [
   { src: heroSportsSpread, objectPosition: "32% 44%", key: "spread" },
@@ -462,12 +275,57 @@ const HERO_FLOATING_CARDS = [
 ];
 
 export default function Dashboard() {
+  const { t, tx, locale } = useLanguage();
   const [heroHeadlineDone, setHeroHeadlineDone] = useState(false);
   const [whySlide, setWhySlide] = useState(0);
   const [whyCarouselHover, setWhyCarouselHover] = useState(false);
   const [whyReduceMotion, setWhyReduceMotion] = useState(false);
-  const whyLen = WHY_PLATFORM_CARDS.length;
-  const whyActive = WHY_PLATFORM_CARDS[whySlide];
+
+  const marketGrowthRows = tx("dashboard.MARKET_GROWTH_ROWS") ?? [];
+  const marketChallengeRows = tx("dashboard.MARKET_CHALLENGE_ROWS") ?? [];
+
+  const whyPlatformCards = useMemo(() => {
+    const rows = tx("dashboard.WHY_PLATFORM_CARDS");
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map((c) => ({ ...c, image: WHY_IMAGE_BY_ID[c.id] }))
+      .filter((c) => c.image);
+  }, [tx, locale]);
+
+  const homeHubTiles = useMemo(() => {
+    const rows = tx("dashboard.HOME_HUB_TILES");
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map((tile) => ({ ...tile, image: HUB_IMAGE_BY_TO[tile.to] }))
+      .filter((tile) => tile.image);
+  }, [tx, locale]);
+
+  const featureCards = useMemo(() => {
+    const rows = tx("dashboard.FEATURE_CARDS");
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map((c) => ({ ...c, image: FEATURE_IMAGE_BY_ID[c.id] }))
+      .filter((c) => c.image);
+  }, [tx, locale]);
+
+  const defaultFeatureNodePct = useMemo(
+    () =>
+      featureCards.map((_, i) =>
+        featureCards.length <= 1 ? 50 : (i / (featureCards.length - 1)) * 100,
+      ),
+    [featureCards],
+  );
+
+  const whyLen = Math.max(1, whyPlatformCards.length);
+  const whyActive = whyPlatformCards[whySlide] ?? whyPlatformCards[0];
+
+  useEffect(() => {
+    setHeroHeadlineDone(false);
+  }, [locale]);
+
+  useEffect(() => {
+    setWhySlide((s) => Math.min(s, Math.max(0, whyPlatformCards.length - 1)));
+  }, [whyPlatformCards.length]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -478,12 +336,12 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (whyReduceMotion || whyCarouselHover) return;
+    if (whyReduceMotion || whyCarouselHover || whyPlatformCards.length < 1) return;
     const id = window.setInterval(() => {
       setWhySlide((i) => (i + 1) % whyLen);
     }, WHY_CAROUSEL_AUTOPLAY_MS);
     return () => clearInterval(id);
-  }, [whyLen, whyReduceMotion, whyCarouselHover, whySlide]);
+  }, [whyLen, whyReduceMotion, whyCarouselHover, whySlide, whyPlatformCards.length]);
 
   const featuresSectionRef = useRef(null);
   const featuresBoardRef = useRef(null);
@@ -492,11 +350,12 @@ export default function Dashboard() {
   const [featuresActivePhase, setFeaturesActivePhase] = useState(0);
   const [featuresMarkerBump, setFeaturesMarkerBump] = useState(false);
   const featuresSkipFirstBumpRef = useRef(true);
-  const [featuresNodePct, setFeaturesNodePct] = useState(() =>
-    FEATURE_CARDS.map((_, i) =>
-      FEATURE_CARDS.length <= 1 ? 50 : (i / (FEATURE_CARDS.length - 1)) * 100,
-    ),
-  );
+  const [featuresNodePct, setFeaturesNodePct] = useState(defaultFeatureNodePct);
+
+  useEffect(() => {
+    setFeaturesNodePct(defaultFeatureNodePct);
+  }, [defaultFeatureNodePct]);
+
   const [featuresStackTimeline, setFeaturesStackTimeline] = useState(false);
 
   useEffect(() => {
@@ -527,7 +386,7 @@ export default function Dashboard() {
               Math.max(0, Math.min(100, ((cy - spineRect.top) / spineRect.height) * 100)),
             )
           : centers.map((_, i) =>
-              FEATURE_CARDS.length <= 1 ? 50 : (i / (FEATURE_CARDS.length - 1)) * 100,
+              featureCards.length <= 1 ? 50 : (i / (featureCards.length - 1)) * 100,
             );
       setFeaturesNodePct(nodeP);
 
@@ -567,7 +426,7 @@ export default function Dashboard() {
       window.removeEventListener("resize", updateFeaturesScrollMarker);
       ro?.disconnect();
     };
-  }, []);
+  }, [featureCards.length]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -587,11 +446,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHelmet
-        isHome
-        title="Sports Card Analytics"
-        description="Compare sports card prices across marketplaces. Analytics, alerts, grading insights, and community — powered by Nixsora."
-      />
+      <PageHelmet isHome title={t("dashboard.helmetTitle")} description={t("dashboard.helmetDescription")} />
       <section
         className="home-hero home-hero--visual"
         style={{
@@ -670,30 +525,32 @@ export default function Dashboard() {
           ))}
         </div>
         <div className="home-hero-inner">
-          <HeroHeadlineTypewriter onTypingComplete={() => setHeroHeadlineDone(true)} />
+          <HeroHeadlineTypewriter
+            titleLine1={t("dashboard.hero.l1")}
+            titleLine2={t("dashboard.hero.l2")}
+            subtitle={t("dashboard.hero.sub")}
+            onTypingComplete={() => setHeroHeadlineDone(true)}
+          />
           <div
             className={`home-hero-ctas${heroHeadlineDone ? " home-hero-ctas--visible" : ""}`}
           >
             <Link className="hero-btn hero-btn--solid" to="/marketplace">
-              <span className="hero-btn__label">Get Started</span>
+              <span className="hero-btn__label">{t("dashboard.hero.getStarted")}</span>
             </Link>
             <a className="hero-btn hero-btn--outline" href="#market-state">
-              <span className="hero-btn__label">Learn More</span>
+              <span className="hero-btn__label">{t("dashboard.hero.learnMore")}</span>
             </a>
           </div>
           <p className={`home-hero-sublink${heroHeadlineDone ? " home-hero-sublink--visible" : ""}`}>
-            <a href="#explore-nixsora">Explore every area of the app ↓</a>
+            <a href="#explore-nixsora">{t("dashboard.hero.exploreLink")}</a>
           </p>
         </div>
         <HeroSourceImageFlow />
       </section>
 
       <section id="market-state" className="home-market-state">
-        <h2>Current sports card market state</h2>
-        <p className="muted home-market-state__lead">
-          Market snapshot — what&apos;s helping adoption, and what still breaks workflows for
-          collectors and investors.
-        </p>
+        <h2>{t("dashboard.marketStateTitle")}</h2>
+        <p className="muted home-market-state__lead">{t("dashboard.marketStateLead")}</p>
 
         <div className="home-market-state__group">
           <header className="home-market-state__group-head">
@@ -701,13 +558,13 @@ export default function Dashboard() {
               <MarketStateIcon name="column-growth" />
             </span>
             <div className="home-market-state__group-titles">
-              <span className="home-market-state__group-kicker">Tailwinds</span>
-              <h3 className="home-market-state__group-title">What&apos;s fueling the market</h3>
-              <p className="home-market-state__group-sub muted">3 market drivers</p>
+              <span className="home-market-state__group-kicker">{t("dashboard.tailwindsKicker")}</span>
+              <h3 className="home-market-state__group-title">{t("dashboard.tailwindsTitle")}</h3>
+              <p className="home-market-state__group-sub muted">{t("dashboard.tailwindsSub")}</p>
             </div>
           </header>
           <div className="home-market-state__cards">
-            {MARKET_GROWTH_ROWS.map((row) => (
+            {marketGrowthRows.map((row) => (
               <article key={row.icon} className="home-market-state__card home-market-state__card--tailwind">
                 <h4 className="home-market-state__card-keyword">{row.keyword}</h4>
                 <span className="home-market-state__card-icon" aria-hidden>
@@ -723,9 +580,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <p className="home-market-state__bridge">
-          Despite the growth, the market faces several challenges:
-        </p>
+        <p className="home-market-state__bridge">{t("dashboard.bridge")}</p>
 
         <div className="home-market-state__group">
           <header className="home-market-state__group-head">
@@ -734,14 +589,14 @@ export default function Dashboard() {
             </span>
             <div className="home-market-state__group-titles">
               <span className="home-market-state__group-kicker home-market-state__group-kicker--caution">
-                Headwinds
+                {t("dashboard.headwindsKicker")}
               </span>
-              <h3 className="home-market-state__group-title">Where collectors still struggle</h3>
-              <p className="home-market-state__group-sub muted">3 common pain points</p>
+              <h3 className="home-market-state__group-title">{t("dashboard.headwindsTitle")}</h3>
+              <p className="home-market-state__group-sub muted">{t("dashboard.headwindsSub")}</p>
             </div>
           </header>
           <div className="home-market-state__cards">
-            {MARKET_CHALLENGE_ROWS.map((row) => (
+            {marketChallengeRows.map((row) => (
               <article key={row.icon} className="home-market-state__card home-market-state__card--headwind">
                 <h4 className="home-market-state__card-keyword">{row.keyword}</h4>
                 <span className="home-market-state__card-icon home-market-state__card-icon--caution" aria-hidden>
@@ -759,94 +614,97 @@ export default function Dashboard() {
       </section>
 
       <section id="why-platform" className="home-why-platform" aria-labelledby="why-platform-heading">
-        <h2 id="why-platform-heading">Why Do We Need This Platform?</h2>
-        <p className="muted home-why-platform__lead">
-          Visibility • comparison • speed • modeling • portfolio — without the wall of text.
-        </p>
+        <h2 id="why-platform-heading">{t("dashboard.whySectionTitle")}</h2>
+        <p className="muted home-why-platform__lead">{t("dashboard.whySectionLead")}</p>
 
         <div
           className="home-why-carousel"
           role="region"
           aria-roledescription="carousel"
-          aria-label="Why this platform"
+          aria-label={t("dashboard.whyCarouselAria")}
           onMouseEnter={() => setWhyCarouselHover(true)}
           onMouseLeave={() => setWhyCarouselHover(false)}
         >
-          <div className="home-why-carousel__shell" aria-live="polite">
-            <div className="home-why-carousel__card">
-              <div className="home-why-carousel__media">
-                <img
+          {whyActive ? (
+            <div className="home-why-carousel__shell" aria-live="polite">
+              <div className="home-why-carousel__card">
+                <div className="home-why-carousel__media">
+                  <img
+                    key={whyActive.id}
+                    src={whyActive.image}
+                    alt=""
+                    className="home-why-carousel__img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div
                   key={whyActive.id}
-                  src={whyActive.image}
-                  alt=""
-                  className="home-why-carousel__img"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div
-                key={whyActive.id}
-                className="home-why-carousel__panel"
-                aria-describedby={`why-slide-${whyActive.id}-desc`}
-              >
-                <p className="anim-line home-why-carousel__overline">{whyActive.overline}</p>
-                <h3 className="anim-line anim-line--delay-1 home-why-carousel__title">{whyActive.keyword}</h3>
-                <p id={`why-slide-${whyActive.id}-desc`} className="sr-only">
-                  {whyActive.body}
-                </p>
-                <ul className="anim-line anim-line--delay-2 home-why-carousel__tags" aria-label="Highlights">
-                  {whyActive.tags.map((tag) => (
-                    <li key={tag} className="home-why-carousel__tag">
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  className="anim-line anim-line--delay-3 home-why-carousel__cta"
-                  to={whyActive.ctaTo}
+                  className="home-why-carousel__panel"
+                  aria-describedby={`why-slide-${whyActive.id}-desc`}
                 >
-                  Learn more
-                  <span className="home-why-carousel__cta-chev" aria-hidden>
-                    ›
-                  </span>
-                </Link>
-              </div>
-            </div>
-
-            <nav className="home-why-carousel__nav" aria-label="Slide navigation">
-              <button
-                type="button"
-                className="home-why-carousel__arrow"
-                aria-label="Previous slide"
-                onClick={() => setWhySlide((i) => (i - 1 + whyLen) % whyLen)}
-              >
-                ‹
-              </button>
-              <div className="home-why-carousel__steps" role="tablist" aria-label="Slides">
-                {WHY_PLATFORM_CARDS.map((card, i) => (
-                  <button
-                    key={`step-${card.id}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === whySlide}
-                    aria-label={`Slide ${String(i + 1).padStart(2, "0")}: ${card.keyword}`}
-                    className={`home-why-carousel__step${i === whySlide ? " is-active" : ""}`}
-                    onClick={() => setWhySlide(i)}
+                  <p className="anim-line home-why-carousel__overline">{whyActive.overline}</p>
+                  <h3 className="anim-line anim-line--delay-1 home-why-carousel__title">{whyActive.keyword}</h3>
+                  <p id={`why-slide-${whyActive.id}-desc`} className="sr-only">
+                    {whyActive.body}
+                  </p>
+                  <ul className="anim-line anim-line--delay-2 home-why-carousel__tags" aria-label={t("dashboard.whyHighlights")}>
+                    {whyActive.tags.map((tag) => (
+                      <li key={tag} className="home-why-carousel__tag">
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    className="anim-line anim-line--delay-3 home-why-carousel__cta"
+                    to={whyActive.ctaTo}
                   >
-                    {String(i + 1).padStart(2, "0")}
-                  </button>
-                ))}
+                    {t("dashboard.whyLearnMore")}
+                    <span className="home-why-carousel__cta-chev" aria-hidden>
+                      ›
+                    </span>
+                  </Link>
+                </div>
               </div>
-              <button
-                type="button"
-                className="home-why-carousel__arrow"
-                aria-label="Next slide"
-                onClick={() => setWhySlide((i) => (i + 1) % whyLen)}
-              >
-                ›
-              </button>
-            </nav>
-          </div>
+
+              <nav className="home-why-carousel__nav" aria-label={t("dashboard.whySlidesNav")}>
+                <button
+                  type="button"
+                  className="home-why-carousel__arrow"
+                  aria-label={t("dashboard.whyPrevSlide")}
+                  onClick={() => setWhySlide((i) => (i - 1 + whyLen) % whyLen)}
+                >
+                  ‹
+                </button>
+                <div className="home-why-carousel__steps" role="tablist" aria-label={t("dashboard.whySlidesNav")}>
+                  {whyPlatformCards.map((card, i) => (
+                    <button
+                      key={`step-${card.id}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={i === whySlide}
+                      aria-label={t("dashboard.whySlideStepAria", {
+                        index: String(i + 1).padStart(2, "0"),
+                        keyword: card.keyword,
+                      })}
+                      className={`home-why-carousel__step${i === whySlide ? " is-active" : ""}`}
+                      onClick={() => setWhySlide(i)}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="home-why-carousel__arrow"
+                  aria-label={t("dashboard.whyNextSlide")}
+                  onClick={() => setWhySlide((i) => (i + 1) % whyLen)}
+                >
+                  ›
+                </button>
+              </nav>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -859,12 +717,9 @@ export default function Dashboard() {
         <div className="home-features__shell home-features__shell--timeline">
           <header className="home-features__intro home-features__intro--centered">
             <h2 id="features-heading" className="home-features__heading">
-              Why this platform: from browse to conviction
+              {t("dashboard.featuresHeading")}
             </h2>
-            <p className="home-features__dek">
-              Compare listings, read the tape, set alerts, respect grading—and stay plugged in with
-              peers. Scroll to follow your place on the path.
-            </p>
+            <p className="home-features__dek">{t("dashboard.featuresDek")}</p>
           </header>
 
           <div
@@ -875,7 +730,7 @@ export default function Dashboard() {
               className="home-features__timeline-grid"
               style={{
                 gridTemplateRows: `repeat(${
-                  featuresStackTimeline ? FEATURE_CARDS.length * 2 : FEATURE_CARDS.length
+                  featuresStackTimeline ? featureCards.length * 2 : featureCards.length
                 }, auto)`,
               }}
             >
@@ -888,7 +743,7 @@ export default function Dashboard() {
                 <span className="home-features__rail-line" />
                 {featuresNodePct.map((pct, ni) => (
                   <span
-                    key={`node-${FEATURE_CARDS[ni].id}`}
+                    key={`node-${featureCards[ni]?.id ?? ni}`}
                     className={`home-features__rail-node${ni === featuresActivePhase ? " is-active" : ""}`}
                     style={{ top: `${pct}%` }}
                   />
@@ -900,7 +755,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              {FEATURE_CARDS.flatMap((item, i) => [
+              {featureCards.flatMap((item, i) => [
                 <div
                   key={`L-${item.id}`}
                   className={`home-features__cell-left${i === featuresActivePhase ? " is-active-phase" : ""}`}
@@ -912,7 +767,7 @@ export default function Dashboard() {
                   <Link
                     to={item.to}
                     className="home-features__phase-disc"
-                    aria-label={`Platform step ${i + 1}: ${item.title}`}
+                    aria-label={t("dashboard.featuresPhaseAria", { step: i + 1, title: item.title })}
                   >
                     <div className="home-features__phase-img">
                       <img
@@ -925,7 +780,7 @@ export default function Dashboard() {
                       />
                     </div>
                     <div className="home-features__phase-label" aria-hidden>
-                      <span className="home-features__phase-kicker">Platform</span>
+                      <span className="home-features__phase-kicker">{t("dashboard.featuresPlatformKicker")}</span>
                       <span className="home-features__phase-num">{i + 1}</span>
                     </div>
                   </Link>
@@ -964,29 +819,26 @@ export default function Dashboard() {
           </div>
 
           <p className="home-features__photo-credit">
-            Stock photos from{" "}
+            {t("dashboard.featuresPhotoCreditPrefix")}{" "}
             <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">
               Unsplash
             </a>
-            .
+            {t("dashboard.featuresPhotoCreditSuffix")}
           </p>
         </div>
       </section>
 
       <section id="explore-nixsora" className="home-hub" aria-labelledby="home-hub-heading">
         <header className="home-hub__header">
-          <p className="home-hub__eyebrow">Full platform</p>
+          <p className="home-hub__eyebrow">{t("dashboard.hubEyebrow")}</p>
           <h2 id="home-hub-heading" className="home-hub__title">
-            Explore every part of Nixsora
+            {t("dashboard.hubTitle")}
           </h2>
-          <p className="home-hub__lead muted">
-            The sections above explain the “why.” Below is the map to every area of the product — marketplace, tools,
-            plans, community, help, and policies — so you can jump straight in.
-          </p>
+          <p className="home-hub__lead muted">{t("dashboard.hubLead")}</p>
         </header>
 
         <ul className="home-hub__grid">
-          {HOME_HUB_TILES.map((tile) => (
+          {homeHubTiles.map((tile) => (
             <li key={tile.to} className="home-hub__tile-cell">
               <Link to={tile.to} className="home-hub__tile">
                 <div className="home-hub__tile-media">
@@ -1007,7 +859,7 @@ export default function Dashboard() {
                   <h3 className="home-hub__tile-title">{tile.title}</h3>
                   <p className="home-hub__tile-blurb">{tile.blurb}</p>
                   <span className="home-hub__tile-cta">
-                    Open
+                    {t("dashboard.hubOpen")}
                     <span className="home-hub__tile-chev" aria-hidden>
                       ›
                     </span>
@@ -1018,6 +870,7 @@ export default function Dashboard() {
           ))}
         </ul>
       </section>
+      <CookieConsentBanner />
     </>
   );
 }

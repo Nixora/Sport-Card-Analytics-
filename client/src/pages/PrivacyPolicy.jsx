@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 import heroAnalyticsImg from "../assets/analytics-screen.jpg";
 import communityTeamImg from "../assets/community-team.jpg";
@@ -149,78 +150,14 @@ function IconArrowBack() {
   );
 }
 
-const SECTIONS = [
-  {
-    title: "Who we are",
-    Icon: IconTeam,
-    image: communityTeamImg,
-    imageAlt: "Colleagues collaborating at a laptop, representing the Nixsora team.",
-    body: [
-      "Nixsora (“we”, “us”) provides sports card marketplace analytics, alerts, and community features. This policy describes how we handle information when you use our website and related services.",
-    ],
-  },
-  {
-    title: "Information we collect",
-    Icon: IconInbox,
-    image: featureResearchImg,
-    imageAlt: "Hands reviewing notes and a laptop, suggesting research and collected information.",
-    body: [
-      "Account details you provide, such as email address and display name, when you register or update your profile.",
-      "Usage data needed to operate the product, including approximate device and log information (for example, pages viewed and general diagnostic events).",
-      "Content you choose to submit in community or support channels.",
-    ],
-  },
-  {
-    title: "How we use information",
-    Icon: IconGears,
-    image: featureAnalyticsImg,
-    imageAlt: "Analytics dashboard and charts illustrating product usage of data.",
-    body: [
-      "To provide, secure, and improve the service — including personalization of charts, alerts, and community features you opt into.",
-      "To communicate with you about your account, product updates, or support requests.",
-      "To meet legal obligations and protect the safety and integrity of our users and the platform.",
-    ],
-  },
-  {
-    title: "Sharing",
-    Icon: IconShare,
-    image: featureCommunityImg,
-    imageAlt: "Community discussion and shared content in a social feed layout.",
-    body: [
-      "We do not sell your personal information. We may share data with service providers who assist us under strict confidentiality, or when required by law.",
-      "Public profile fields or community posts you publish may be visible to other users as designed in the product.",
-    ],
-  },
-  {
-    title: "Retention & security",
-    Icon: IconVault,
-    image: featureGradingImg,
-    imageAlt: "Graded sports card in a protective case, symbolizing careful handling and storage.",
-    body: [
-      "We retain information only as long as needed for the purposes above, unless a longer period is required by law.",
-      "We use reasonable technical and organizational measures to protect data; no method of transmission over the internet is completely secure.",
-    ],
-  },
-  {
-    title: "Your choices",
-    Icon: IconSliders,
-    image: featureAlertsImg,
-    imageAlt: "Alert and notification controls in the product interface.",
-    body: [
-      "You may access or update certain profile information in your account settings where available.",
-      "You can contact us to ask questions about this policy or to exercise applicable privacy rights in your jurisdiction.",
-    ],
-  },
-  {
-    title: "Contact",
-    Icon: IconMail,
-    image: featureCompareImg,
-    imageAlt: "Marketplace comparison view in the Nixsora application.",
-    body: [
-      "Questions about privacy: support@example.com (replace with your production address before launch).",
-      "We may update this policy from time to time; the “Last updated” date below will change when we do.",
-    ],
-  },
+const PRIVACY_SECTION_MEDIA = [
+  { Icon: IconTeam, image: communityTeamImg },
+  { Icon: IconInbox, image: featureResearchImg },
+  { Icon: IconGears, image: featureAnalyticsImg },
+  { Icon: IconShare, image: featureCommunityImg },
+  { Icon: IconVault, image: featureGradingImg },
+  { Icon: IconSliders, image: featureAlertsImg },
+  { Icon: IconMail, image: featureCompareImg },
 ];
 
 function PrivacySectionCard({ section: s, index, reduceMotion }) {
@@ -275,7 +212,20 @@ function PrivacySectionCard({ section: s, index, reduceMotion }) {
 }
 
 export default function PrivacyPolicy() {
-  const updated = "April 11, 2026";
+  const { t, tx } = useLanguage();
+  const sections = useMemo(() => {
+    const raw = tx("privacy.sections");
+    if (!Array.isArray(raw)) return [];
+    return raw.map((s, i) => {
+      const media = PRIVACY_SECTION_MEDIA[i] || PRIVACY_SECTION_MEDIA[0];
+      return {
+        ...s,
+        Icon: media.Icon,
+        image: media.image,
+      };
+    });
+  }, [tx]);
+
   const [reduceMotion, setReduceMotion] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false
   );
@@ -290,10 +240,7 @@ export default function PrivacyPolicy() {
 
   return (
     <div className={`privacy-page${reduceMotion ? "" : " privacy-page--motion"}`}>
-      <PageHelmet
-        breadcrumb="privacy policy"
-        description="How Nixsora collects, uses, and protects your information."
-      />
+      <PageHelmet breadcrumb="privacy policy" description={t("privacy.helmetDescription")} />
       <header className="privacy-page__header">
         <div className="privacy-page__intro">
           <div className={`privacy-page__hero-wrap${reduceMotion ? "" : " privacy-page__hero-wrap--motion"}`}>
@@ -302,7 +249,7 @@ export default function PrivacyPolicy() {
               src={heroAnalyticsImg}
               width={1200}
               height={675}
-              alt="Analytics workspace with charts representing how Nixsora processes marketplace data."
+              alt={t("privacy.heroAlt")}
               decoding="async"
             />
             <img
@@ -319,34 +266,31 @@ export default function PrivacyPolicy() {
               <span className="privacy-page__inline-icon" aria-hidden>
                 <IconPolicyDoc />
               </span>
-              <h1 className="privacy-page__title">Privacy Policy</h1>
+              <h1 className="privacy-page__title">{t("privacy.title")}</h1>
             </div>
             <p className="privacy-page__meta muted">
               <span className="privacy-page__inline-icon" aria-hidden>
                 <IconCalendar />
               </span>
-              <span>Last updated: {updated}</span>
+              <span>{t("privacy.lastUpdated", { date: t("privacy.updatedDate") })}</span>
             </p>
             <p className="privacy-page__lede muted">
               <span className="privacy-page__inline-icon privacy-page__inline-icon--top" aria-hidden>
                 <IconInfo />
               </span>
-              <span>
-                This page explains what information we collect, why we collect it, and the choices you have. It is a
-                general template — have counsel review it before you rely on it for compliance.
-              </span>
+              <span>{t("privacy.lede")}</span>
             </p>
-            <ul className="privacy-page__highlights" aria-label="Policy highlights">
-              <li>No sale of personal data</li>
-              <li>{"Account & usage data described below"}</li>
-              <li>Contact us for privacy questions</li>
+            <ul className="privacy-page__highlights" aria-label={t("privacy.highlightsLabel")}>
+              <li>{t("privacy.hi1")}</li>
+              <li>{t("privacy.hi2")}</li>
+              <li>{t("privacy.hi3")}</li>
             </ul>
           </div>
         </div>
       </header>
 
       <div className="privacy-page__sections">
-        {SECTIONS.map((s, index) => (
+        {sections.map((s, index) => (
           <PrivacySectionCard key={s.title} section={s} index={index} reduceMotion={reduceMotion} />
         ))}
       </div>
@@ -356,7 +300,7 @@ export default function PrivacyPolicy() {
           <span className="privacy-page__inline-icon" aria-hidden>
             <IconArrowBack />
           </span>
-          <span>Back to home</span>
+          <span>{t("privacy.backHome")}</span>
         </Link>
       </p>
     </div>

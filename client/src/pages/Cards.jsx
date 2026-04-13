@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { fetchCards } from "../api.js";
 import CardTitleLink from "../components/CardTitleLink.jsx";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function feedbackTone(pct) {
   if (typeof pct !== "number") return "na";
@@ -19,32 +21,32 @@ function formatPriceDisplay(price, currency) {
   return cur === "USD" || cur === "$" ? `$${num}` : `${num} ${cur}`;
 }
 
-function formatFreshnessLine(lastSeenIso, trendDate) {
+function formatFreshnessLine(lastSeenIso, trendDate, tr) {
   if (lastSeenIso) {
-    const t = new Date(lastSeenIso).getTime();
-    if (!Number.isFinite(t)) return trendDate ? `As of ${trendDate}` : "—";
-    const diff = Math.max(0, Date.now() - t);
+    const ts = new Date(lastSeenIso).getTime();
+    if (!Number.isFinite(ts)) return trendDate ? tr("cardsFmt.asOf", { date: trendDate }) : "—";
+    const diff = Math.max(0, Date.now() - ts);
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
-    if (h < 72) return `${h}h ${m}m`;
+    if (h < 72) return tr("cardsFmt.hoursMinutes", { h, m });
     const d = Math.floor(h / 24);
-    return `${d}d ago`;
+    return tr("cardsFmt.daysAgo", { d });
   }
-  return trendDate ? `As of ${trendDate}` : "—";
+  return trendDate ? tr("cardsFmt.asOf", { date: trendDate }) : "—";
 }
 
-function formatCondition(raw) {
+function formatCondition(raw, tr) {
   if (raw == null || raw === "") return "—";
   if (typeof raw === "string") return raw;
   if (typeof raw === "object") {
     if (typeof raw.conditionDisplayName === "string") return raw.conditionDisplayName;
-    if (typeof raw.conditionId === "string") return `Condition ${raw.conditionId}`;
+    if (typeof raw.conditionId === "string") return `${tr("common.conditionPrefix")} ${raw.conditionId}`;
   }
   return "—";
 }
 
-function rowSubtitle(c) {
-  if (c.seller_username) return `Seller · ${c.seller_username}`;
+function rowSubtitle(c, tr) {
+  if (c.seller_username) return tr("cardsFmt.rowSubtitleSeller", { name: c.seller_username });
   const key = c.card_key || "";
   return key.length > 56 ? `${key.slice(0, 56)}…` : key;
 }
@@ -54,6 +56,7 @@ function cardEbayListingUrl(url) {
 }
 
 export default function Cards() {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const initial = useMemo(() => {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
@@ -109,12 +112,9 @@ export default function Cards() {
 
   return (
     <div className="cards-page cards-page--light">
-      <PageHelmet
-        breadcrumb="marketplace"
-        description="Browse cards, compare asking prices from your ingest sample, filters, and table view on Nixsora."
-      />
+      <PageHelmet breadcrumb="marketplace" description={t("cards.helmetDescription")} />
       {err && <p className="err">{err}</p>}
-      {!data && !err && <p className="muted">Loading…</p>}
+      {!data && !err && <DataLoading />}
       {data && (
         <>
         <div className="cards-layout">
@@ -136,7 +136,7 @@ export default function Cards() {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="card-placeholder">No image</div>
+                      <div className="card-placeholder">{t("cards.noImage")}</div>
                     );
                   return (
                     <article className="card-tile" key={c.card_key}>
@@ -147,8 +147,8 @@ export default function Cards() {
                             href={ebayUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title="View listing on eBay"
-                            aria-label="View listing on eBay"
+                            title={t("cards.viewListingEbay")}
+                            aria-label={t("cards.viewListingEbay")}
                           >
                             {thumbInner}
                           </a>
@@ -156,8 +156,8 @@ export default function Cards() {
                           <Link
                             className="card-tile__media-hit"
                             to={detailTo}
-                            title="Open card detail"
-                            aria-label="Open card detail"
+                            title={t("cards.openCardDetail")}
+                            aria-label={t("cards.openCardDetail")}
                           >
                             {thumbInner}
                           </Link>
@@ -165,38 +165,38 @@ export default function Cards() {
                       </div>
                       <div className="card-body">
                         <h3 className="card-tile__title-heading">
-                          <Link className="card-tile__title" to={detailTo} title="Open card detail">
+                          <Link className="card-tile__title" to={detailTo} title={t("cards.openCardDetail")}>
                             {titleLabel}
                           </Link>
                         </h3>
                         <div className="badge-row">
                           {c.flags?.has_autograph && (
-                            <span className="pill pill--autograph">Autograph</span>
+                            <span className="pill pill--autograph">{t("cards.autograph")}</span>
                           )}
                           {c.flags?.has_grade_or_auth && (
-                            <span className="pill pill--grade">Grade/Auth</span>
+                            <span className="pill pill--grade">{t("cards.gradeAuth")}</span>
                           )}
-                          {c.flags?.has_psa && <span className="pill pill--psa">PSA</span>}
+                          {c.flags?.has_psa && <span className="pill pill--psa">{t("cards.psa")}</span>}
                         </div>
                         <div className="card-stats">
                           <div>
-                            <span className="muted">Price</span>
+                            <span className="muted">{t("cards.price")}</span>
                             <strong>{formatPriceDisplay(c.latest_trend?.price, c.price_currency)}</strong>
                           </div>
                           <div>
-                            <span className="muted">Listings (N)</span>
+                            <span className="muted">{t("cards.listingsN")}</span>
                             <strong>{c.latest_trend?.count ?? "—"}</strong>
                           </div>
                           <div>
-                            <span className="muted">Condition</span>
-                            <strong>{formatCondition(c.preview_condition)}</strong>
+                            <span className="muted">{t("cards.condition")}</span>
+                            <strong>{formatCondition(c.preview_condition, t)}</strong>
                           </div>
                           <div>
-                            <span className="muted">Seller</span>
+                            <span className="muted">{t("cards.seller")}</span>
                             <strong>{c.seller_username || "—"}</strong>
                           </div>
                           <div>
-                            <span className="muted">Feedback</span>
+                            <span className="muted">{t("cards.feedback")}</span>
                             <strong
                               className={`feedback-badge feedback-badge--${feedbackTone(c.seller_feedback_percentage)}`}
                             >
@@ -216,7 +216,7 @@ export default function Cards() {
                 <div className="table-filters-header mp-filters">
                   <div className="row-tools table-filters-row">
                     <label>
-                      <span className="ui-icon" aria-hidden="true">◫</span> View
+                      <span className="ui-icon" aria-hidden="true">◫</span> {t("cards.view")}
                       <select
                         value={viewMode}
                         onChange={(e) => {
@@ -224,12 +224,12 @@ export default function Cards() {
                           setPage(1);
                         }}
                       >
-                        <option value="cards">Card list</option>
-                        <option value="table">List view</option>
+                        <option value="cards">{t("cards.cardList")}</option>
+                        <option value="table">{t("cards.listView")}</option>
                       </select>
                     </label>
                     <label>
-                      <span className="ui-icon" aria-hidden="true">↕</span> Sort{" "}
+                      <span className="ui-icon" aria-hidden="true">↕</span> {t("cards.sort")}{" "}
                       <select
                         value={sort}
                         onChange={(e) => {
@@ -237,9 +237,9 @@ export default function Cards() {
                           setPage(1);
                         }}
                       >
-                        <option value="recency">Last seen</option>
-                        <option value="activity">Activity (count)</option>
-                        <option value="price">Price</option>
+                        <option value="recency">{t("cards.lastSeen")}</option>
+                        <option value="activity">{t("cards.activityCount")}</option>
+                        <option value="price">{t("cards.sortPrice")}</option>
                       </select>
                     </label>
                     <label>
@@ -251,7 +251,7 @@ export default function Cards() {
                           setPage(1);
                         }}
                       />{" "}
-                      <span className="ui-icon" aria-hidden="true">✍</span> Autograph (from titles)
+                      <span className="ui-icon" aria-hidden="true">✍</span> {t("cards.autographFromTitles")}
                     </label>
                     <label>
                       <input
@@ -262,7 +262,7 @@ export default function Cards() {
                           setPage(1);
                         }}
                       />{" "}
-                      <span className="ui-icon" aria-hidden="true">✓</span> Grade/auth keywords
+                      <span className="ui-icon" aria-hidden="true">✓</span> {t("cards.gradeAuthKeywords")}
                     </label>
                   </div>
                 </div>
@@ -278,26 +278,26 @@ export default function Cards() {
                               href={ebayUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title="View listing on eBay"
-                              aria-label="View listing on eBay"
+                              title={t("cards.viewListingEbay")}
+                              aria-label={t("cards.viewListingEbay")}
                             >
                               {c.preview_image_url ? (
                                 <img src={c.preview_image_url} alt="" loading="lazy" />
                               ) : (
-                                <span className="mp-row__thumb-placeholder">No image</span>
+                                <span className="mp-row__thumb-placeholder">{t("cards.noImage")}</span>
                               )}
                             </a>
                           ) : (
                             <Link
                               className="mp-row__thumb-link"
                               to={`/cards/${encodeURIComponent(c.card_key)}`}
-                              title="Open card detail"
-                              aria-label="Open card detail"
+                              title={t("cards.openCardDetail")}
+                              aria-label={t("cards.openCardDetail")}
                             >
                               {c.preview_image_url ? (
                                 <img src={c.preview_image_url} alt="" loading="lazy" />
                               ) : (
-                                <span className="mp-row__thumb-placeholder">No image</span>
+                                <span className="mp-row__thumb-placeholder">{t("cards.noImage")}</span>
                               )}
                             </Link>
                           )}
@@ -315,15 +315,15 @@ export default function Cards() {
                             </span>
                           </div>
                           <div className="mp-row__pills">
-                            <span className="mp-pill mp-pill--muted" title="Listing sample size">
-                              Listings: {c.latest_trend?.count ?? "—"}
+                            <span className="mp-pill mp-pill--muted" title={t("cards.titleListingSample")}>
+                              {t("cards.listingsCount", { n: c.latest_trend?.count ?? "—" })}
                             </span>
-                            <span className="mp-pill mp-pill--muted" title="Condition (latest listing)">
-                              {formatCondition(c.preview_condition)}
+                            <span className="mp-pill mp-pill--muted" title={t("cards.titleConditionListing")}>
+                              {formatCondition(c.preview_condition, t)}
                             </span>
                             {c.seller_username && (
-                              <span className="mp-pill mp-pill--muted" title="Seller username">
-                                Seller: {c.seller_username}
+                              <span className="mp-pill mp-pill--muted" title={t("cards.titleSellerUsername")}>
+                                {t("cards.sellerNamed", { name: c.seller_username })}
                               </span>
                             )}
                             {(c.seller_feedback_percentage != null || c.seller_feedback_score != null) && (
@@ -331,7 +331,7 @@ export default function Cards() {
                                 className={`mp-pill mp-pill--muted feedback-badge feedback-badge--${feedbackTone(
                                   c.seller_feedback_percentage
                                 )}`}
-                                title="Seller feedback"
+                                title={t("cards.titleSellerFeedback")}
                               >
                                 {c.seller_feedback_percentage ?? "—"}% ({c.seller_feedback_score ?? "—"})
                               </span>
@@ -339,12 +339,12 @@ export default function Cards() {
                           </div>
                           <div className="mp-row__pills">
                             {c.flags?.has_autograph && (
-                              <span className="mp-pill mp-pill--red">Autograph</span>
+                              <span className="mp-pill mp-pill--red">{t("cards.autograph")}</span>
                             )}
                             {c.flags?.has_grade_or_auth && (
-                              <span className="mp-pill mp-pill--muted">Grade/Auth</span>
+                              <span className="mp-pill mp-pill--muted">{t("cards.gradeAuth")}</span>
                             )}
-                            {c.flags?.has_psa && <span className="mp-pill mp-pill--muted">PSA</span>}
+                            {c.flags?.has_psa && <span className="mp-pill mp-pill--muted">{t("cards.psa")}</span>}
                           </div>
                         </div>
                       </article>
@@ -355,11 +355,11 @@ export default function Cards() {
             )}
           </section>
           <aside className={`panel cards-filter-card ${viewMode === "table" ? "is-hidden" : ""}`}>
-            <h2>Cards ({data.total})</h2>
-            <h3>Filters</h3>
+            <h2>{t("cards.titleWithTotal", { total: data.total })}</h2>
+            <h3>{t("cards.filters")}</h3>
             <div className="row-tools row-tools--stack">
               <label>
-                View
+                {t("cards.view")}
                 <select
                   value={viewMode}
                   onChange={(e) => {
@@ -367,12 +367,12 @@ export default function Cards() {
                     setPage(1);
                   }}
                 >
-                  <option value="cards">Card list</option>
-                  <option value="table">List view</option>
+                  <option value="cards">{t("cards.cardList")}</option>
+                  <option value="table">{t("cards.listView")}</option>
                 </select>
               </label>
               <label>
-                Sort{" "}
+                {t("cards.sort")}{" "}
                 <select
                   value={sort}
                   onChange={(e) => {
@@ -380,9 +380,9 @@ export default function Cards() {
                     setPage(1);
                   }}
                 >
-                  <option value="recency">Last seen</option>
-                  <option value="activity">Activity (count)</option>
-                  <option value="price">Price</option>
+                  <option value="recency">{t("cards.lastSeen")}</option>
+                  <option value="activity">{t("cards.activityCount")}</option>
+                  <option value="price">{t("cards.sortPrice")}</option>
                 </select>
               </label>
               <label>
@@ -394,7 +394,7 @@ export default function Cards() {
                     setPage(1);
                   }}
                 />{" "}
-                Autograph (from titles)
+                {t("cards.autographFromTitles")}
               </label>
               <label>
                 <input
@@ -405,20 +405,20 @@ export default function Cards() {
                     setPage(1);
                   }}
                 />{" "}
-                Grade/auth keywords
+                {t("cards.gradeAuthKeywords")}
               </label>
             </div>
           </aside>
         </div>
 
-        <div className="floating-pager" aria-label="Pagination">
+        <div className="floating-pager" aria-label={t("common.pagination")}>
           <button
             type="button"
             className="hero-btn hero-btn--outline"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
-            Prev
+            {t("common.prev")}
           </button>
           <span className="floating-pager__meta">
             {page}/{totalPages}
@@ -429,7 +429,7 @@ export default function Cards() {
             disabled={page >= totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
-            Next
+            {t("common.next")}
           </button>
         </div>
         </>

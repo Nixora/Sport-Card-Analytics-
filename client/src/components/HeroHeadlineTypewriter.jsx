@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 
-const TITLE_L1 = "Sports Card";
-const TITLE_L2 = "Analytics";
-const SUB =
-  "Compare marketplaces, read the trends, and decide with data—not guesswork.";
-
 const CHAR_MS = 48;
 const PAUSE_AFTER_L1_MS = 200;
 const PAUSE_AFTER_L2_MS = 260;
 const SUB_CHAR_MS = 28;
 
-export default function HeroHeadlineTypewriter({ onTypingComplete }) {
+export default function HeroHeadlineTypewriter({
+  titleLine1,
+  titleLine2,
+  subtitle,
+  onTypingComplete,
+}) {
+  const L1 = titleLine1 ?? "";
+  const L2 = titleLine2 ?? "";
+  const SUB = subtitle ?? "";
+
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
   const [sub, setSub] = useState("");
-  const [phase, setPhase] = useState("l1"); // l1 | l2 | sub | done
+  const [phase, setPhase] = useState("l1");
   const [subStarted, setSubStarted] = useState(false);
   const onTypingCompleteRef = useRef(onTypingComplete);
   onTypingCompleteRef.current = onTypingComplete;
@@ -23,14 +27,26 @@ export default function HeroHeadlineTypewriter({ onTypingComplete }) {
     let cancelled = false;
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+    setLine1("");
+    setLine2("");
+    setSub("");
+    setPhase("l1");
+    setSubStarted(false);
+
     const run = async () => {
       const reduceMotion =
         typeof window !== "undefined" &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+      if (!L1.length && !L2.length && !SUB.length) {
+        setPhase("done");
+        onTypingCompleteRef.current?.();
+        return;
+      }
+
       if (reduceMotion) {
-        setLine1(TITLE_L1);
-        setLine2(TITLE_L2);
+        setLine1(L1);
+        setLine2(L2);
         setSub(SUB);
         setPhase("done");
         setSubStarted(true);
@@ -38,18 +54,18 @@ export default function HeroHeadlineTypewriter({ onTypingComplete }) {
         return;
       }
 
-      for (let i = 1; i <= TITLE_L1.length; i++) {
+      for (let i = 1; i <= L1.length; i++) {
         if (cancelled) return;
-        setLine1(TITLE_L1.slice(0, i));
+        setLine1(L1.slice(0, i));
         await sleep(CHAR_MS);
       }
       setPhase("l2");
       await sleep(PAUSE_AFTER_L1_MS);
       if (cancelled) return;
 
-      for (let i = 1; i <= TITLE_L2.length; i++) {
+      for (let i = 1; i <= L2.length; i++) {
         if (cancelled) return;
-        setLine2(TITLE_L2.slice(0, i));
+        setLine2(L2.slice(0, i));
         await sleep(CHAR_MS);
       }
       setPhase("sub");
@@ -70,17 +86,17 @@ export default function HeroHeadlineTypewriter({ onTypingComplete }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [L1, L2, SUB]);
 
-  const showCursorL1 = phase === "l1" && line1.length < TITLE_L1.length;
-  const showCursorL2 = phase === "l2" && line2.length < TITLE_L2.length;
+  const showCursorL1 = phase === "l1" && line1.length < L1.length;
+  const showCursorL2 = phase === "l2" && line2.length < L2.length;
   const showCursorSub = phase === "sub" && sub.length < SUB.length;
 
   return (
     <>
       <h1
         className="home-hero-title-calligraphy home-hero-title-calligraphy--type"
-        aria-label={`${TITLE_L1} ${TITLE_L2}`}
+        aria-label={`${L1} ${L2}`.trim()}
       >
         <span className="home-hero-title-calligraphy__line1">
           {line1}

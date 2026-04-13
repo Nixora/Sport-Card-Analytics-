@@ -3,7 +3,9 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.jsx";
+import HumanGate from "./components/HumanGate.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { LanguageProvider } from "./context/LanguageContext.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -11,7 +13,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <HelmetProvider>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <LanguageProvider>
+            <HumanGate>
+              <App />
+            </HumanGate>
+          </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>

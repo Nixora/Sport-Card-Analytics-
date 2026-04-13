@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function IconCheck({ className }) {
   return (
@@ -16,88 +17,78 @@ function IconCheck({ className }) {
   );
 }
 
-const PLANS = [
-  {
-    name: "Starter",
-    tag: null,
-    blurb: "Track a focused slice of the market.",
-    priceMonthly: "$0",
-    priceAnnual: "$0",
-    points: ["Marketplace comparison", "Basic trend views", "Email support"],
-    cta: "Get started",
-    ctaTo: "/marketplace",
-    featured: false,
-  },
-  {
-    name: "Pro",
-    tag: "Most popular",
-    blurb: "More alerts, history, and workflow room.",
-    priceMonthly: "$29",
-    priceAnnual: "$24",
-    points: ["Everything in Starter", "Saved searches & alerts", "Longer trend history", "Priority support"],
-    cta: "Coming soon",
-    ctaTo: null,
-    featured: true,
-  },
-  {
-    name: "Team",
-    tag: null,
-    blurb: "Shared workspace for small shops or breakers.",
-    priceMonthly: "Custom",
-    priceAnnual: "Custom",
-    points: ["Everything in Pro", "Multiple seats", "Export-friendly reporting", "Onboarding call"],
-    cta: "Contact sales",
-    ctaTo: "/contact",
-    featured: false,
-  },
+const PLAN_ORDER = [
+  { id: "starter", ctaTo: "/marketplace", featured: false, customPrice: false },
+  { id: "pro", ctaTo: null, featured: true, customPrice: false },
+  { id: "team", ctaTo: "/contact", featured: false, customPrice: true },
 ];
 
 export default function Premium() {
+  const { t, tx } = useLanguage();
   const [annual, setAnnual] = useState(true);
+
+  const plans = useMemo(() => {
+    const bundle = tx("premium.plans");
+    if (!bundle || typeof bundle !== "object") return [];
+    return PLAN_ORDER.map((meta) => {
+      const p = bundle[meta.id];
+      if (!p) return null;
+      const priceMonthly = meta.customPrice ? t("premium.priceCustom") : p.priceMonthly;
+      const priceAnnual = meta.customPrice ? t("premium.priceCustom") : p.priceAnnual;
+      return {
+        id: meta.id,
+        name: p.name,
+        tag: p.tag ?? null,
+        blurb: p.blurb,
+        points: Array.isArray(p.points) ? p.points : [],
+        cta: p.cta,
+        ctaTo: meta.ctaTo,
+        featured: meta.featured,
+        customPrice: meta.customPrice,
+        priceMonthly,
+        priceAnnual,
+      };
+    }).filter(Boolean);
+  }, [t, tx]);
 
   return (
     <div className="pricing-page">
-      <PageHelmet
-        breadcrumb="premium"
-        description="Nixsora Pricing — Starter, Pro, and Team plans for marketplace analytics and alerts."
-      />
+      <PageHelmet breadcrumb="premium" description={t("premium.helmetDescription")} />
 
       <div className="pricing-page__glow" aria-hidden />
 
       <header className="pricing-page__header">
-        <p className="pricing-page__eyebrow">Pricing</p>
-        <h1 className="pricing-page__title">Plans for every collector</h1>
-        <p className="pricing-page__lede muted">
-          Compare tiers and pick the depth you need. Billing goes live later — prices are placeholders you can replace anytime.
-        </p>
+        <p className="pricing-page__eyebrow">{t("premium.eyebrow")}</p>
+        <h1 className="pricing-page__title">{t("premium.title")}</h1>
+        <p className="pricing-page__lede muted">{t("premium.lede")}</p>
 
-        <div className="pricing-page__toggle" role="group" aria-label="Billing period">
+        <div className="pricing-page__toggle" role="group" aria-label={t("premium.billingGroup")}>
           <button
             type="button"
             className={`pricing-page__toggle-btn${annual ? " is-active" : ""}`}
             onClick={() => setAnnual(true)}
           >
-            Annual
-            <span className="pricing-page__toggle-hint">Save ~17%</span>
+            {t("premium.annual")}
+            <span className="pricing-page__toggle-hint">{t("premium.annualHint")}</span>
           </button>
           <button
             type="button"
             className={`pricing-page__toggle-btn${!annual ? " is-active" : ""}`}
             onClick={() => setAnnual(false)}
           >
-            Monthly
+            {t("premium.monthly")}
           </button>
         </div>
       </header>
 
       <div className="pricing-page__grid" role="list">
-        {PLANS.map((plan) => {
+        {plans.map((plan) => {
           const price = annual ? plan.priceAnnual : plan.priceMonthly;
-          const isCustom = price === "Custom";
+          const isCustom = plan.customPrice;
           const ctaClass = `pricing-card__cta${plan.featured ? " pricing-card__cta--primary" : ""}`;
           return (
             <article
-              key={plan.name}
+              key={plan.id}
               className={`pricing-card${plan.featured ? " pricing-card--featured" : ""}`}
               role="listitem"
             >
@@ -107,14 +98,14 @@ export default function Premium() {
                 <p className="pricing-card__blurb">{plan.blurb}</p>
                 <div className="pricing-card__price-block">
                   <span className="pricing-card__price">{price}</span>
-                  {!isCustom ? <span className="pricing-card__period">/mo</span> : null}
+                  {!isCustom ? <span className="pricing-card__period">{t("premium.perMo")}</span> : null}
                 </div>
                 <p className="pricing-card__price-note">
                   {isCustom
-                    ? "Tailored to your team"
+                    ? t("premium.noteCustom")
                     : annual
-                      ? "Per month, billed annually"
-                      : "Billed monthly"}
+                      ? t("premium.noteAnnual")
+                      : t("premium.noteMonthly")}
                 </p>
               </div>
               <div className="pricing-card__rule" aria-hidden />
@@ -131,7 +122,7 @@ export default function Premium() {
                   {plan.cta}
                 </Link>
               ) : (
-                <button type="button" className={ctaClass} disabled={plan.cta === "Coming soon"}>
+                <button type="button" className={ctaClass} disabled={plan.id === "pro"}>
                   {plan.cta}
                 </button>
               )}
@@ -141,9 +132,9 @@ export default function Premium() {
       </div>
 
       <p className="pricing-page__footnote muted">
-        Taxes may apply. Team pricing is set with sales. Questions?{" "}
+        {t("premium.footnoteBefore")}
         <Link className="pricing-page__link" to="/contact">
-          Contact us
+          {t("footer.contactUs")}
         </Link>
         .
       </p>

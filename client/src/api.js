@@ -171,6 +171,49 @@ async function authFetch(path, options = {}) {
   }
 }
 
+/** Turnstile / human gate: requires cookies (same-site or CORS credentials). */
+export async function fetchHumanStatus() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AUTH_TIMEOUT_MS);
+  try {
+    const r = await fetch(`${BASE}/api/human/status`, {
+      method: "GET",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const text = await r.text();
+    let body = null;
+    if (text) {
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = { error: text };
+      }
+    }
+    if (!r.ok) {
+      throw new Error(formatApiError(body, r));
+    }
+    return body;
+  } catch (e) {
+    if (e?.name === "AbortError") {
+      throw new Error(`Request timeout after ${AUTH_TIMEOUT_MS / 1000}s.`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function verifyHumanToken(token) {
+  return authFetch("/api/human/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+}
+
 export async function fetchMe() {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), AUTH_TIMEOUT_MS);
@@ -214,15 +257,49 @@ export function signIn(email, password) {
   });
 }
 
+export function requestPasswordReset(email) {
+  return authFetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPasswordWithToken(token, new_password) {
+  return authFetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, new_password }),
+  });
+}
+
+export function changePassword(current_password, new_password) {
+  return authFetch("/api/auth/me/password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ current_password, new_password }),
+  });
+}
+
 export function signOut() {
   return authFetch("/api/auth/signout", { method: "POST" });
 }
 
-export function signUp(email, password, display_name) {
+/** Sign-up step 1: validates and emails a 6-digit verification code. */
+export function signUpRequestOtp(email, password, display_name) {
   return authFetch("/api/auth/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, display_name }),
+  });
+}
+
+/** Sign-up step 2: verifies OTP and sets the session cookie. */
+export function signUpVerifyOtp(signup_challenge, otp) {
+  return authFetch("/api/auth/signup/verify-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ signup_challenge, otp }),
   });
 }
 

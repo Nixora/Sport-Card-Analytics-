@@ -1,19 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchCard, fetchCardListings } from "../api.js";
+import AntdSpinDots from "../components/AntdSpinDots.jsx";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
-
-const FLAG_LABELS = {
-  has_signed: "Signed",
-  has_auto: "Auto",
-  has_psa: "PSA",
-  has_bgs: "BGS",
-  has_jsa: "JSA",
-  has_beckett: "Beckett",
-  has_coa: "COA",
-  has_autograph: "Autograph",
-  has_grade_or_auth: "Grade / auth",
-};
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function IconSeller() {
   return (
@@ -61,21 +52,22 @@ function trendPriceStats(trend) {
   };
 }
 
-function formatCondition(raw) {
+function formatCondition(raw, tr) {
   if (raw == null || raw === "") return null;
   if (typeof raw === "string") return raw;
   if (typeof raw === "object") {
     if (typeof raw.conditionDisplayName === "string") return raw.conditionDisplayName;
-    if (typeof raw.conditionId === "string") return `Condition ${raw.conditionId}`;
+    if (typeof raw.conditionId === "string")
+      return `${tr("common.conditionPrefix")} ${raw.conditionId}`;
   }
   return null;
 }
 
-function uniqueConditions(listings) {
+function uniqueConditions(listings, tr) {
   const seen = new Set();
   const out = [];
   for (const li of listings || []) {
-    const label = formatCondition(li.condition);
+    const label = formatCondition(li.condition, tr);
     if (label && !seen.has(label)) {
       seen.add(label);
       out.push(label);
@@ -107,8 +99,8 @@ function flagPillClass(key) {
   return "pill pill--keyword";
 }
 
-function formatFlagLabel(key) {
-  if (FLAG_LABELS[key]) return FLAG_LABELS[key];
+function formatFlagLabel(key, flags) {
+  if (flags && flags[key]) return flags[key];
   return key.replace(/^has_/i, "").replace(/_/g, " ");
 }
 
@@ -572,6 +564,8 @@ function CompareSnapshotChart({ ebayValue, compare, currency }) {
 }
 
 export default function CardDetail() {
+  const { t, tx } = useLanguage();
+  const flagLabels = tx("cardDetail.flags") || {};
   const { cardKey } = useParams();
   const navigate = useNavigate();
   const [card, setCard] = useState(null);
@@ -608,7 +602,7 @@ export default function CardDetail() {
   );
 
   const stats = useMemo(() => trendPriceStats(trendRows), [trendRows]);
-  const conditions = useMemo(() => uniqueConditions(listingRows), [listingRows]);
+  const conditions = useMemo(() => uniqueConditions(listingRows, t), [listingRows, t]);
   const flagKeys = useMemo(() => mergeKeywordFlagKeys(listingRows), [listingRows]);
 
   const slug = card?.card_key ?? cardKey ?? "";
@@ -656,7 +650,7 @@ export default function CardDetail() {
         {err && <p className="err card-detail-err">{err}</p>}
         {!card && !err && (
           <div className="card-detail-skeleton card-detail-skeleton--plain">
-            <p className="muted">Loading card…</p>
+            <DataLoading variant="section" />
           </div>
         )}
 
@@ -751,7 +745,11 @@ export default function CardDetail() {
                 <div className="card-detail-top-flags">
                   <div className="card-detail-top-flags__col">
                     <h3 className="card-detail-top-flags__title">Condition</h3>
-                    {!listings && <p className="muted card-detail-top-flags__empty">Loading…</p>}
+                    {!listings && (
+                      <p className="muted card-detail-top-flags__empty card-detail-top-flags__loading">
+                        <AntdSpinDots size="sm" />
+                      </p>
+                    )}
                     {listings && conditions.length === 0 && (
                       <p className="muted card-detail-top-flags__empty">None in sample.</p>
                     )}
@@ -767,7 +765,11 @@ export default function CardDetail() {
                   </div>
                   <div className="card-detail-top-flags__col">
                     <h3 className="card-detail-top-flags__title">Keyword flags</h3>
-                    {!listings && <p className="muted card-detail-top-flags__empty">Loading…</p>}
+                    {!listings && (
+                      <p className="muted card-detail-top-flags__empty card-detail-top-flags__loading">
+                        <AntdSpinDots size="sm" />
+                      </p>
+                    )}
                     {listings && !flagKeys.length && (
                       <p className="muted card-detail-top-flags__empty">None in sample.</p>
                     )}
@@ -775,7 +777,7 @@ export default function CardDetail() {
                       <ul className="card-detail-keyword-row card-detail-keyword-row--compact">
                         {flagKeys.map((k) => (
                           <li key={k}>
-                            <span className={flagPillClass(k)}>{formatFlagLabel(k)}</span>
+                            <span className={flagPillClass(k)}>{formatFlagLabel(k, flagLabels)}</span>
                           </li>
                         ))}
                       </ul>
@@ -1153,7 +1155,7 @@ export default function CardDetail() {
                             <span className="muted">{li.price_currency || ""}</span>
                           </td>
                           <td className="card-detail-table__cond">
-                            {formatCondition(li.condition) || "—"}
+                            {formatCondition(li.condition, t) || "—"}
                           </td>
                           <td className="card-detail-table__title-cell">
                             {(li.title || "").slice(0, 100)}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
 import { fetchSellerProfile } from "../api.js";
 
@@ -329,7 +330,7 @@ export default function SellerProfile() {
       </nav>
 
       {err && <p className="err">{err}</p>}
-      {!data && !err && <p className="muted">Loading…</p>}
+      {!data && !err && <DataLoading />}
 
       {data && (
         <>

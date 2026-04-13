@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
 import { createCommunityArticle } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -61,7 +62,7 @@ export default function CommunityNew() {
       </p>
 
       {authLoading ? (
-        <p className="muted">Loading…</p>
+        <DataLoading variant="default" />
       ) : (
         <div className="community-forum__card">
           <form onSubmit={onSubmit}>

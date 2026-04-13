@@ -1,20 +1,23 @@
-import { useLayoutEffect, useRef } from "react";
+import { lazy, Suspense, useLayoutEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import SiteHeader from "./components/SiteHeader.jsx";
 import SiteFooter from "./components/SiteFooter.jsx";
+import PageRouteFallback from "./components/PageRouteFallback.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import Cards from "./pages/Cards.jsx";
-import CardDetail from "./pages/CardDetail.jsx";
-import Alerts from "./pages/Alerts.jsx";
-import Community from "./pages/Community.jsx";
-import CommunityNew from "./pages/CommunityNew.jsx";
-import Premium from "./pages/Premium.jsx";
-import Sellers from "./pages/Sellers.jsx";
-import SellerProfile from "./pages/SellerProfile.jsx";
-import Profile from "./pages/Profile.jsx";
-import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
-import Contact from "./pages/Contact.jsx";
-import FAQ from "./pages/FAQ.jsx";
+
+const Cards = lazy(() => import("./pages/Cards.jsx"));
+const CardDetail = lazy(() => import("./pages/CardDetail.jsx"));
+const Alerts = lazy(() => import("./pages/Alerts.jsx"));
+const Community = lazy(() => import("./pages/Community.jsx"));
+const CommunityNew = lazy(() => import("./pages/CommunityNew.jsx"));
+const Premium = lazy(() => import("./pages/Premium.jsx"));
+const Sellers = lazy(() => import("./pages/Sellers.jsx"));
+const SellerProfile = lazy(() => import("./pages/SellerProfile.jsx"));
+const Profile = lazy(() => import("./pages/Profile.jsx"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
+const Contact = lazy(() => import("./pages/Contact.jsx"));
+const FAQ = lazy(() => import("./pages/FAQ.jsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 
 function RedirectAnalyticsToCard() {
   const { cardKey } = useParams();
@@ -80,30 +83,33 @@ export default function App() {
           className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}${privacyShellRoute ? " content-shell--privacy" : ""}`}
         >
           {showBodyPath && <p className="body-path-label">{bodyPathLabel}</p>}
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/marketplace" element={<Cards />} />
-            <Route path="/marketplace-comparison" element={<Navigate to="/marketplace" replace />} />
-            <Route path="/cards" element={<Navigate to="/marketplace" replace />} />
-            <Route path="/cards/:cardKey" element={<CardDetail />} />
-            <Route path="/analytics" element={<Navigate to="/marketplace" replace />} />
-            <Route path="/analytics/:cardKey" element={<RedirectAnalyticsToCard />} />
-            <Route path="/comparison-alert" element={<Alerts />} />
-            <Route path="/alerts" element={<Navigate to="/comparison-alert" replace />} />
-            <Route path="/seller-analysis" element={<Sellers />} />
-            <Route path="/sellers/:sellerUsername" element={<SellerProfile />} />
-            <Route path="/premium" element={<Premium />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/community/new" element={<CommunityNew />} />
-            <Route path="/community/:articleId" element={<Community />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/u/:displayName" element={<Profile />} />
-            <Route path="/sign-in" element={<Navigate to="/" replace />} />
-            <Route path="/sign-up" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={<PageRouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/marketplace" element={<Cards />} />
+              <Route path="/marketplace-comparison" element={<Navigate to="/marketplace" replace />} />
+              <Route path="/cards" element={<Navigate to="/marketplace" replace />} />
+              <Route path="/cards/:cardKey" element={<CardDetail />} />
+              <Route path="/analytics" element={<Navigate to="/marketplace" replace />} />
+              <Route path="/analytics/:cardKey" element={<RedirectAnalyticsToCard />} />
+              <Route path="/comparison-alert" element={<Alerts />} />
+              <Route path="/alerts" element={<Navigate to="/comparison-alert" replace />} />
+              <Route path="/seller-analysis" element={<Sellers />} />
+              <Route path="/sellers/:sellerUsername" element={<SellerProfile />} />
+              <Route path="/premium" element={<Premium />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/community/new" element={<CommunityNew />} />
+              <Route path="/community/:articleId" element={<Community />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/u/:displayName" element={<Profile />} />
+              <Route path="/sign-in" element={<Navigate to="/" replace />} />
+              <Route path="/sign-up" element={<Navigate to="/" replace />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+            </Routes>
+          </Suspense>
         </div>
       </main>
       <SiteFooter />

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import AntdSpinDots from "../components/AntdSpinDots.jsx";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
 import {
   communityMemberAvatarUrl,
@@ -9,9 +11,7 @@ import {
   postCommunityHelpful,
 } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
-
-const COMMUNITY_NAME = "Nixsora Community";
-const ROLE_LABEL = "Collector";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function fmtWhen(iso) {
   if (!iso) return "";
@@ -136,6 +136,7 @@ function listSnippetParts(excerpt) {
 
 export default function Community() {
   const { articleId } = useParams();
+  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const replyRef = useRef(null);
 
@@ -265,20 +266,17 @@ export default function Community() {
   if (articleId) {
     return (
       <div className="cards-page cards-page--light community-forum">
-        <PageHelmet
-          breadcrumb="community"
-          description="Discuss collecting, grading, and the hobby with other members."
-        />
+        <PageHelmet breadcrumb="community" description={t("community.helmetDescription")} />
 
         <Link to="/community" className="community-forum__back">
-          ← All topics
+          {t("community.backAllTopics")}
         </Link>
 
         {detailLoading ? (
-          <p className="muted">Loading…</p>
+          <DataLoading variant="section" />
         ) : detailErr || !article ? (
           <div className="community-forum__card">
-            <p className="err">{detailErr || "Article not found"}</p>
+            <p className="err">{detailErr || t("community.articleNotFound")}</p>
           </div>
         ) : (
           <div className="community-forum__detail-grid">
@@ -298,7 +296,7 @@ export default function Community() {
                       <p className="community-forum__post-username">
                         <span className="community-forum__author-name">{article.authorDisplayName}</span>
                       </p>
-                      <p className="community-forum__post-role">{ROLE_LABEL}</p>
+                      <p className="community-forum__post-role">{t("community.roleCollector")}</p>
                     </div>
                   </div>
                   <p className="community-forum__post-time">{fmtWhen(article.createdAt)}</p>
@@ -311,15 +309,15 @@ export default function Community() {
                   <span>
                     {article.viewCount != null ? (
                       <>
-                        {Number(article.viewCount).toLocaleString()} views
+                        {t("community.views", { n: Number(article.viewCount).toLocaleString() })}
                         {" · "}
                       </>
                     ) : null}
-                    Message 1 of {messageTotal}
+                    {t("community.messageOf", { current: 1, total: messageTotal })}
                     {latestAnswerId ? (
                       <>
                         {" · "}
-                        <a href={`#answer-${latestAnswerId}`}>Latest reply &gt;</a>
+                        <a href={`#answer-${latestAnswerId}`}>{t("community.latestReply")}</a>
                       </>
                     ) : null}
                   </span>
@@ -335,24 +333,24 @@ export default function Community() {
                     onClick={onHelpful}
                     title={
                       !user
-                        ? "Sign in to mark as helpful"
+                        ? t("community.markHelpfulSignIn")
                         : article.viewerMarkedHelpful
-                          ? "You marked this as helpful"
-                          : "Mark as helpful"
+                          ? t("community.markHelpfulYou")
+                          : t("community.markHelpful")
                     }
                   >
                     <IconLike />
-                    {article.likeCount ?? 0} Helpful
+                    {article.likeCount ?? 0} {t("community.helpfulWord")}
                   </button>
                   <button type="button" className="community-forum__btn-primary" onClick={scrollToReply}>
-                    Reply
+                    {t("community.reply")}
                   </button>
                 </div>
               </article>
 
               <div className="community-forum__answers-card">
                 <h2 className="community-forum__answers-title">
-                  Replies ({article.answers?.length ?? 0})
+                  {t("community.repliesTitle", { n: article.answers?.length ?? 0 })}
                 </h2>
                 {article.answers?.length ? (
                   <ul className="community-forum__reply-list">
@@ -377,13 +375,13 @@ export default function Community() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="muted community-forum__hint">No replies yet — add one below.</p>
+                  <p className="muted community-forum__hint">{t("community.noRepliesYet")}</p>
                 )}
               </div>
 
               <div id="community-reply" ref={replyRef} className="community-forum__card community-forum__reply-compose">
                 <h3 className="community-forum__card-title" style={{ marginTop: 0 }}>
-                  Your reply
+                  {t("community.yourReply")}
                 </h3>
                 {canCompose ? (
                   <form onSubmit={onPostAnswer}>
@@ -393,7 +391,7 @@ export default function Community() {
                         className="community-forum__textarea community-forum__textarea--compact"
                         value={answerBody}
                         onChange={(e) => setAnswerBody(e.target.value)}
-                        placeholder="Write your reply…"
+                        placeholder={t("community.phReply")}
                         maxLength={8000}
                         rows={4}
                       />
@@ -403,26 +401,26 @@ export default function Community() {
                       className="community-forum__btn-primary community-forum__submit"
                       disabled={answerBusy || !answerBody.trim()}
                     >
-                      Post reply
+                      {t("community.postReply")}
                     </button>
                   </form>
                 ) : (
                   <p className="muted community-forum__hint" style={{ margin: 0 }}>
-                    Sign in to post a reply.
+                    {t("community.signInToReply")}
                   </p>
                 )}
               </div>
 
               <div className="community-forum__footer-links">
-                <Link to="/community">All forum topics</Link>
-                {featured[0] ? <Link to={`/community/${featured[0].id}`}>Next topic &gt;</Link> : null}
+                <Link to="/community">{t("community.allForumTopics")}</Link>
+                {featured[0] ? <Link to={`/community/${featured[0].id}`}>{t("community.nextTopic")}</Link> : null}
               </div>
             </div>
 
             <aside className="community-forum__featured">
-              <h2 className="community-forum__sidebar-title">Featured posts</h2>
+              <h2 className="community-forum__sidebar-title">{t("community.featuredPosts")}</h2>
               {featured.length === 0 ? (
-                <p className="muted community-forum__hint">More topics will appear here.</p>
+                <p className="muted community-forum__hint">{t("community.featuredEmpty")}</p>
               ) : (
                 featured.map((f) => (
                   <Link key={f.id} to={`/community/${f.id}`} className="community-forum__featured-item">
@@ -445,43 +443,41 @@ export default function Community() {
 
   return (
     <div className="cards-page cards-page--light community-forum">
-      <PageHelmet
-        breadcrumb="community"
-        description="Discuss collecting, grading, and the hobby with other members."
-      />
+      <PageHelmet breadcrumb="community" description={t("community.helmetDescription")} />
 
       <header>
-        <h1 className="community-forum__page-title">Community</h1>
-        <p className="community-forum__lead">
-          Topics are saved in the database. Open a topic to add to its view count; sign in to post, reply, or mark
-          helpful (once per topic).
-        </p>
+        <h1 className="community-forum__page-title">{t("community.pageTitle")}</h1>
+        <p className="community-forum__lead">{t("community.pageLead")}</p>
       </header>
 
       <div className="community-forum__list-wrap">
         <div className="community-forum__list-toolbar">
-          <h2 className="community-forum__list-heading">Topics</h2>
+          <h2 className="community-forum__list-heading">{t("community.topicsHeading")}</h2>
           {canCompose ? (
             <Link className="community-forum__new-post" to="/community/new">
-              New post
+              {t("community.newPost")}
             </Link>
           ) : (
             <span className="muted community-forum__hint" style={{ margin: 0 }}>
-              {authLoading ? "…" : "Sign in to post"}
+              {authLoading ? (
+                <span className="community-forum__auth-spin">
+                  <AntdSpinDots size="sm" />
+                </span>
+              ) : (
+                t("community.signInToPost")
+              )}
             </span>
           )}
         </div>
         {listLoading ? (
-          <p className="muted" style={{ padding: "0.65rem 1.15rem 1rem" }}>
-            Loading…
-          </p>
+          <DataLoading variant="compact" />
         ) : listErr ? (
           <p className="err" style={{ padding: "0.65rem 1.15rem 1rem" }}>
             {listErr}
           </p>
         ) : list.length === 0 ? (
           <p className="muted" style={{ padding: "0.65rem 1.15rem 1rem" }}>
-            No topics yet.
+            {t("community.noTopics")}
           </p>
         ) : (
           <ul className="community-forum__list">
@@ -502,15 +498,16 @@ export default function Community() {
                           <>
                             {" "}
                             <Link to={detailPath} className="community-forum__view-more">
-                              View more
+                              {t("community.viewMore")}
                             </Link>
                           </>
                         ) : null}
                       </p>
                       <TagRow tags={a.tags} />
                       <p className="community-forum__list-byline">
-                        By <span className="community-forum__author-name">{a.authorDisplayName}</span> • {ROLE_LABEL} •{" "}
-                        {COMMUNITY_NAME}
+                        {t("community.bylineBy")}{" "}
+                        <span className="community-forum__author-name">{a.authorDisplayName}</span> •{" "}
+                        {t("community.roleCollector")} • {t("community.name")}
                       </p>
                       <ForumStats views={a.viewCount} comments={a.answerCount} likes={a.likeCount} />
                     </div>

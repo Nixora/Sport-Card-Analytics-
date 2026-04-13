@@ -1,7 +1,8 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { profileImageUrl } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import AuthModal from "./AuthModal.jsx";
 
 const HOME_SCROLL_SOLID_PX = 40;
@@ -99,12 +100,17 @@ function avatarInitials(user) {
 const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
+  const { locale, setLocale, t, localeOptions } = useLanguage();
   const marketplaceNavActive = marketplaceActive({ pathname });
   const isHome = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langWrapRef = useRef(null);
   const [authModal, setAuthModal] = useState(null);
   const [headerPressed, setHeaderPressed] = useState(false);
   const [homeScrolled, setHomeScrolled] = useState(false);
+
+  const localeChip = localeOptions.find((o) => o.code === locale) ?? localeOptions[0];
 
   const barSolid = !isHome || homeScrolled;
 
@@ -124,12 +130,25 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== "Escape") return;
+      if (langOpen) {
+        setLangOpen(false);
+        return;
+      }
       if (authModal) setAuthModal(null);
       else setMenuOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [authModal]);
+  }, [authModal, langOpen]);
+
+  useEffect(() => {
+    if (!langOpen) return;
+    const onDoc = (e) => {
+      if (langWrapRef.current && !langWrapRef.current.contains(e.target)) setLangOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [langOpen]);
 
   useEffect(() => {
     if (!authModal) return;
@@ -167,30 +186,30 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
       }}
     >
       <div className="site-header__nix-shell">
-        <Link to="/" className="site-header__nix-brand" aria-label="Nixsora home">
+        <Link to="/" className="site-header__nix-brand" aria-label={t("header.ariaHome")}>
           Nixsora
         </Link>
 
-        <nav className="site-header__nix-nav" aria-label="Main">
+        <nav className="site-header__nix-nav" aria-label={t("header.ariaNavMain")}>
           <NavLink
             to="/marketplace"
             className={({ isActive }) =>
               `site-header__nav-link${isActive || marketplaceNavActive ? " is-active" : ""}`
             }
           >
-            Marketplace
+            {t("header.navMarketplace")}
           </NavLink>
           <NavLink to="/comparison-alert" className={navClass}>
-            Comparison and Alert
+            {t("header.navComparisonAlert")}
           </NavLink>
           <NavLink to="/seller-analysis" className={navClass}>
-            Seller analysis
+            {t("header.navSellerAnalysis")}
           </NavLink>
           <NavLink to="/community" className={navClass}>
-            Community
+            {t("header.navCommunity")}
           </NavLink>
           <NavLink to="/premium" className={navClass}>
-            Pricing
+            {t("header.navPricing")}
           </NavLink>
         </nav>
 
@@ -198,23 +217,52 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           <Link
             to="/marketplace"
             className="site-header__icon-btn"
-            aria-label="Search marketplace"
+            aria-label={t("header.ariaSearchMarketplace")}
           >
             <IconSearch />
           </Link>
-          <button type="button" className="site-header__lang" aria-label="Language: English">
-            EN
-            <IconChevronNav />
-          </button>
+          <div className="site-header__lang-wrap" ref={langWrapRef}>
+            <button
+              type="button"
+              className={`site-header__lang${langOpen ? " is-open" : ""}`}
+              aria-label={`${t("header.ariaLanguageMenu")}: ${localeChip.label}`}
+              aria-expanded={langOpen}
+              aria-haspopup="listbox"
+              onClick={() => setLangOpen((o) => !o)}
+            >
+              {localeChip.short}
+              <IconChevronNav />
+            </button>
+            {langOpen ? (
+              <div className="site-header__lang-panel" role="listbox" aria-label={t("header.ariaLanguageMenu")}>
+                {localeOptions.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    role="option"
+                    aria-selected={locale === opt.code}
+                    className={`site-header__lang-option${locale === opt.code ? " is-active" : ""}`}
+                    onClick={() => {
+                      setLocale(opt.code);
+                      setLangOpen(false);
+                    }}
+                  >
+                    <span className="site-header__lang-option-short">{opt.short}</span>
+                    <span className="site-header__lang-option-label">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <NavLink
             to="/contact"
             className={({ isActive }) => `site-header__contact-cta${isActive ? " is-active" : ""}`}
           >
-            Contact Us
+            {t("header.contactUs")}
           </NavLink>
           {user ? (
             <>
-              <Link to="/profile" className="site-header__avatar" aria-label="Open profile">
+              <Link to="/profile" className="site-header__avatar" aria-label={t("header.profile")}>
                 {user.avatar?.id ? (
                   <img src={profileImageUrl(user.avatar.id)} alt="" className="site-header__avatar-img" />
                 ) : (
@@ -224,12 +272,12 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                 )}
               </Link>
               <button type="button" className="site-header__sign-out" onClick={() => signOut()}>
-                Sign out
+                {t("header.signOut")}
               </button>
             </>
           ) : (
             <button type="button" className="site-header__sign-link" onClick={() => setAuthModal("signin")}>
-              Sign in
+              {t("header.signIn")}
             </button>
           )}
           <button
@@ -237,7 +285,7 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
             className="site-header__menu-btn"
             aria-expanded={menuOpen}
             aria-controls="site-header-drawer"
-            aria-label={menuOpen ? "Close menu" : "Menu"}
+            aria-label={menuOpen ? t("header.ariaCloseMenu") : t("header.ariaMenu")}
             onClick={() => setMenuOpen((o) => !o)}
           >
             <BurgerIcon open={menuOpen} />
@@ -250,11 +298,11 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           <button
             type="button"
             className="site-header__scrim"
-            aria-label="Close menu"
+            aria-label={t("header.ariaCloseMenu")}
             onClick={() => setMenuOpen(false)}
           />
           <div id="site-header-drawer" className="site-header__drawer" role="dialog" aria-modal="true">
-            <nav className="site-header__drawer-nav" aria-label="Mobile">
+            <nav className="site-header__drawer-nav" aria-label={t("header.ariaNavMobile")}>
               <NavLink
                 to="/marketplace"
                 className={({ isActive }) =>
@@ -262,35 +310,35 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                 }
                 onClick={() => setMenuOpen(false)}
               >
-                Marketplace
+                {t("header.navMarketplace")}
               </NavLink>
               <NavLink
                 to="/comparison-alert"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Comparison and Alert
+                {t("header.navComparisonAlert")}
               </NavLink>
               <NavLink
                 to="/seller-analysis"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Seller analysis
+                {t("header.navSellerAnalysis")}
               </NavLink>
               <NavLink
                 to="/community"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Community
+                {t("header.navCommunity")}
               </NavLink>
               <NavLink
                 to="/premium"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Pricing
+                {t("header.navPricing")}
               </NavLink>
               <NavLink
                 to="/contact"
@@ -299,8 +347,25 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                 }
                 onClick={() => setMenuOpen(false)}
               >
-                Contact Us
+                {t("header.contactUs")}
               </NavLink>
+              <p className="site-header__drawer-lang-label">{t("header.drawerLanguage")}</p>
+              <div className="site-header__drawer-lang-chips" role="group" aria-label={t("header.ariaLanguageMenu")}>
+                {localeOptions.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    className={`site-header__drawer-lang-chip${locale === opt.code ? " is-active" : ""}`}
+                    aria-pressed={locale === opt.code}
+                    onClick={() => {
+                      setLocale(opt.code);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
               {user ? (
                 <>
                   <Link
@@ -308,7 +373,7 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                     className="site-header__drawer-link"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Profile
+                    {t("header.profile")}
                   </Link>
                   <button
                     type="button"
@@ -318,7 +383,7 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                       signOut();
                     }}
                   >
-                    Sign out
+                    {t("header.signOut")}
                   </button>
                 </>
               ) : (
@@ -330,7 +395,7 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
                     setAuthModal("signin");
                   }}
                 >
-                  Sign in
+                  {t("header.signIn")}
                 </button>
               )}
             </nav>

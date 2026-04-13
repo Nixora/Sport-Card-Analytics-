@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import DataLoading from "../components/DataLoading.jsx";
 import PageHelmet from "../components/PageHelmet.jsx";
 import {
+  changePassword,
   fetchPublicProfile,
   profileImageUrl,
   publicProfileAvatarUrl,
@@ -173,7 +175,7 @@ function PublicProfilePage() {
       <ProfileBackBar onBack={onBack} />
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <DataLoading variant="section" />
       ) : err || !profile ? (
         <div className="panel profile-page__panel">
           <p className="err">{err || "Profile not found"}</p>
@@ -247,6 +249,12 @@ function MyProfilePage() {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwNew2, setPwNew2] = useState("");
+  const [pwErr, setPwErr] = useState("");
+  const [pwOk, setPwOk] = useState("");
+  const [pwBusy, setPwBusy] = useState(false);
   const photoInputRef = useRef(null);
 
   const syncFromUser = useCallback((u) => {
@@ -300,6 +308,34 @@ function MyProfilePage() {
     setEditing(false);
     setErr("");
     setOk("");
+  }
+
+  async function onPasswordSubmit(e) {
+    e.preventDefault();
+    setPwErr("");
+    setPwOk("");
+    if (pwNew !== pwNew2) {
+      setPwErr("New passwords do not match.");
+      return;
+    }
+    if (pwNew.length < 8) {
+      setPwErr("New password must be at least 8 characters.");
+      return;
+    }
+    setPwBusy(true);
+    try {
+      const body = await changePassword(pwCurrent, pwNew);
+      setUser(body.user);
+      setPwCurrent("");
+      setPwNew("");
+      setPwNew2("");
+      setPwOk("Password updated.");
+      await refresh();
+    } catch (ex) {
+      setPwErr(ex?.message || "Could not update password");
+    } finally {
+      setPwBusy(false);
+    }
   }
 
   async function onSubmit(e) {
@@ -360,7 +396,7 @@ function MyProfilePage() {
       <PageHelmet breadcrumb="profile" description="Your Nixsora profile and preferences." />
 
       {!user && loading ? (
-        <p className="muted">Loading…</p>
+        <DataLoading variant="section" />
       ) : (
         <>
           <ProfileBackBar onBack={onBack} />
@@ -564,6 +600,55 @@ function MyProfilePage() {
                 </button>
               </form>
             )}
+          </div>
+
+          <div className="panel profile-page__panel profile-page__panel--password">
+            <h2 className="profile-page__view-h">Reset password</h2>
+            <p className="muted profile-page__hint">
+              Change your password while you are signed in.               Use “Forgot password?” on the sign-in screen (you’ll get an email link) if you are locked out.
+            </p>
+            <form className="profile-page__form profile-page__form--password" onSubmit={onPasswordSubmit}>
+              {pwErr ? <p className="err profile-page__msg">{pwErr}</p> : null}
+              {pwOk ? <p className="profile-page__ok profile-page__msg">{pwOk}</p> : null}
+              <label className="profile-page__field">
+                <span className="profile-page__label">Current password</span>
+                <input
+                  className="profile-page__input"
+                  type="password"
+                  autoComplete="current-password"
+                  value={pwCurrent}
+                  onChange={(e) => setPwCurrent(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="profile-page__field">
+                <span className="profile-page__label">New password</span>
+                <input
+                  className="profile-page__input"
+                  type="password"
+                  autoComplete="new-password"
+                  value={pwNew}
+                  onChange={(e) => setPwNew(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </label>
+              <label className="profile-page__field">
+                <span className="profile-page__label">Confirm new password</span>
+                <input
+                  className="profile-page__input"
+                  type="password"
+                  autoComplete="new-password"
+                  value={pwNew2}
+                  onChange={(e) => setPwNew2(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </label>
+              <button type="submit" className="hero-btn hero-btn--solid profile-page__save" disabled={pwBusy}>
+                <span className="hero-btn__label">{pwBusy ? "Updating…" : "Update password"}</span>
+              </button>
+            </form>
           </div>
         </>
       )}

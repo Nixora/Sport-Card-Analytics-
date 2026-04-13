@@ -9,6 +9,8 @@ const rateLimit = require("express-rate-limit");
 const config = require("./config");
 
 const apiRoutes = require("./routes/api");
+const humanRoutes = require("./routes/human");
+const { humanCheckApi } = require("./middleware/humanCheck");
 const { closeDb } = require("./db");
 
 const app = express();
@@ -24,6 +26,9 @@ app.use(
         upgradeInsecureRequests: null,
         // Default Helmet img-src is 'self' data: — marketplace card photos are hotlinked HTTPS URLs.
         imgSrc: ["'self'", "data:", "https:", "http:"],
+        // Cloudflare Turnstile (optional human check)
+        scriptSrc: ["'self'", "https://challenges.cloudflare.com"],
+        frameSrc: ["'self'", "https://challenges.cloudflare.com"],
       },
     },
   })
@@ -48,6 +53,8 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
+app.use("/api/human", humanRoutes);
+app.use("/api", humanCheckApi);
 app.use("/api", apiRoutes);
 
 if (config.webDist && isProd) {
