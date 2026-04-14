@@ -6902,6 +6902,22 @@ a.card-tile__title:hover {
   color: #e0f2fe;
 }
 
+/* Reset password page — white copy on dark panel (success + hints) */
+.cards-page--light.reset-password-page .profile-page__ok,
+.cards-page--light.reset-password-page .muted,
+.cards-page--light.reset-password-page .profile-page__hint {
+  color: #ffffff;
+}
+
+.cards-page--light.reset-password-page .profile-page__inline-link,
+.cards-page--light.reset-password-page .profile-page__inline-link:hover {
+  color: #ffffff;
+}
+
+.cards-page--light.reset-password-page .profile-page__inline-link:hover {
+  text-decoration: underline;
+}
+
 .cards-page--light .profile-page__sign-out {
   font: inherit;
   font-size: 0.88rem;

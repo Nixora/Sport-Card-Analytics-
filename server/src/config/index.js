@@ -36,20 +36,81 @@ const publicAppUrl =
   stripTrailingSlashes(req("PUBLIC_APP_URL", "")) ||
   stripTrailingSlashes(clientOrigins[0] || "");
 
+/** Strip BOM / CR from .env (Windows) so Resend sees a valid `from` string. */
+function normalizeEnvString(s) {
+  return String(s || "")
+    .replace(/^\uFEFF/, "")
+    .replace(/\r/g, "")
+    .trim();
+}
+
+/**
+ * Resend requires `email@domain.tld` or `Name <email@domain.tld>` (domain must contain a dot).
+ */
+function emailPartFromFromLine(s) {
+  const t = normalizeEnvString(s);
+  if (!t) return "";
+  const m = t.match(/<\s*([^<>]+@[^<>]+)\s*>/);
+  if (m) return normalizeEnvString(m[1]);
+  return t;
+}
+
+function isValidResendFromLine(s) {
+  const email = emailPartFromFromLine(s);
+  if (!email || !email.includes("@")) return false;
+  const domain = email.slice(email.indexOf("@") + 1);
+  if (!domain.includes(".")) return false;
+  return /^[^\s<>]+@[^\s<>]+$/.test(email);
+}
+
+function resendDisplayName() {
+  const n = (
+    normalizeEnvString(req("RESEND_FROM_NAME", "")) ||
+    normalizeEnvString(req("APP_PUBLIC_NAME", "Nixsora")) ||
+    "App"
+  )
+    .replace(/[<>]/g, "")
+    .trim();
+  return n || "App";
+}
+
+/**
+ * RESEND_FROM_EMAIL must be a bare address (e.g. no-reply@domain.com). If someone sets the full
+ * `Name <email>` line here, we extract the email — otherwise the app would build invalid nested `<>`.
+ */
+function parseBareEmailFromEnv(s) {
+  const t = normalizeEnvString(s);
+  if (!t) return "";
+  const m = t.match(/<\s*([^<>]+@[^<>]+)\s*>/);
+  if (m) return normalizeEnvString(m[1]);
+  return t;
+}
+
+/** Resend test sender; valid for any API key on a free account. */
+const RESEND_FALLBACK_FROM_EMAIL = "onboarding@resend.dev";
+
 /**
  * Resend "from" line. Set RESEND_FROM to a full value like `Nixsora <no-reply@nixsora.com>`,
  * or set RESEND_FROM_EMAIL and optionally RESEND_FROM_NAME (defaults to APP_PUBLIC_NAME).
+ * With RESEND_API_KEY set, invalid values fall back to `… <onboarding@resend.dev>` so email works in dev and prod.
  */
 const resendFromLine = (() => {
-  const full = req("RESEND_FROM", "").trim();
-  if (full && full.includes("@")) {
-    return full;
+  const key = normalizeEnvString(req("RESEND_API_KEY", ""));
+
+  const fromFull = normalizeEnvString(req("RESEND_FROM", ""));
+  if (fromFull && isValidResendFromLine(fromFull)) {
+    return fromFull;
   }
-  const key = req("RESEND_API_KEY", "");
-  const emailPart = req("RESEND_FROM_EMAIL", "").trim() || (key ? "onboarding@resend.dev" : "");
-  if (!emailPart) return "";
-  const namePart = req("RESEND_FROM_NAME", "").trim() || req("APP_PUBLIC_NAME", "Nixsora").trim();
-  return `${namePart} <${emailPart}>`;
+
+  let email =
+    parseBareEmailFromEnv(req("RESEND_FROM_EMAIL", "")) || (key ? RESEND_FALLBACK_FROM_EMAIL : "");
+  if (email && !isValidResendFromLine(email)) {
+    email = key ? RESEND_FALLBACK_FROM_EMAIL : "";
+  }
+  if (!email) return "";
+
+  const line = `${resendDisplayName()} <${email}>`;
+  return normalizeEnvString(line);
 })();
 
 module.exports = {

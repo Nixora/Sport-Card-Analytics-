@@ -11,13 +11,20 @@ function isEmailConfigured() {
   return Boolean(String(config.resendApiKey || "").trim() && String(config.resendFromLine || "").trim());
 }
 
+function normalizeFromHeader(s) {
+  return String(s || "")
+    .replace(/^\uFEFF/, "")
+    .replace(/\r/g, "")
+    .trim();
+}
+
 /**
  * @param {{ to: string, subject: string, html: string, text: string }} opts
  */
 async function sendTransactional(opts) {
   const { to, subject, html, text } = opts;
   const client = resendClient();
-  const from = String(config.resendFromLine || "").trim();
+  const from = normalizeFromHeader(config.resendFromLine);
 
   if (!client || !from) {
     if (config.nodeEnv !== "production") {

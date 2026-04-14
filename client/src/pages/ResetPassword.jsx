@@ -40,7 +40,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="cards-page cards-page--light profile-page">
+    <div className="cards-page cards-page--light profile-page reset-password-page">
       <PageHelmet breadcrumb="reset password" description="Set a new password for your Nixsora account." />
 
       <div className="profile-page__toolbar">
