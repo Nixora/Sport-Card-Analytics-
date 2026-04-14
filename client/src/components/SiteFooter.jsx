@@ -41,6 +41,7 @@ export default function SiteFooter() {
   const { t } = useLanguage();
   const year = new Date().getFullYear();
   const [chatVisible, setChatVisible] = useState(true);
+  const supportEmail = "support@nixsora.com";
 
   return (
     <>
@@ -101,8 +102,8 @@ export default function SiteFooter() {
                 </Link>
               </p>
               <p className="site-footer__contact-cta">
-                <a className="site-footer__contact-cta-link" href="mailto:support@example.com">
-                  support@example.com
+                <a className="site-footer__contact-cta-link" href={`mailto:${supportEmail}`}>
+                  {supportEmail}
                 </a>
               </p>
               <p className="site-footer__contact-label">{t("footer.location")}</p>
@@ -166,7 +167,7 @@ export default function SiteFooter() {
             <p className="footer-chat__bubble">{t("footer.chatBubble")}</p>
             <a
               className="footer-chat__button"
-              href="mailto:support@example.com"
+              href={`mailto:${supportEmail}`}
               title={t("footer.getHelpTitle")}
               aria-label={t("footer.getHelpEmail")}
             >

@@ -99,8 +99,8 @@ export const en = {
       "If an account exists, we’ll email a link to reset your password.",
     subOtp: "Enter the 6-digit code sent to {{email}} to finish creating your account.",
     subOtpFallbackEmail: "your email",
-    subSignup: "Create an account. We’ll email a code to verify your address.",
-    subSignin: "Welcome back. Sign in to continue.",
+    subSignup: "",
+    subSignin: "",
     resetSentNotice:
       "If an account exists for that email, we sent a reset link. Use it within about an hour, then sign in here.",
     backSignIn: "Back to sign in",
@@ -500,7 +500,7 @@ export const en = {
         title: "Contact",
         imageAlt: "Marketplace comparison view in the Nixsora application.",
         body: [
-          "Questions about privacy: support@example.com (replace with your production address before launch).",
+          "Questions about privacy: support@nixsora.com",
           "We may update this policy from time to time; the “Last updated” date below will change when we do.",
         ],
       },

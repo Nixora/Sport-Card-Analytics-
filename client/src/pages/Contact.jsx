@@ -4,7 +4,14 @@ import PageHelmet from "../components/PageHelmet.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import featureCommunityImg from "../assets/features/feature-community.jpg";
 
-const SUPPORT_EMAIL = "support@example.com";
+const CONTACT_EMAILS = {
+  main: "nixsora@nixsora.com",
+  hiring: "hr@nixsora.com",
+  support: "support@nixsora.com",
+  admin: "admin@nixsora.com",
+};
+
+const SUPPORT_EMAIL = CONTACT_EMAILS.support;
 
 const TOPIC_KEYS = ["general", "account", "data", "billing", "privacy", "other"];
 
@@ -137,7 +144,7 @@ export default function Contact() {
           </header>
 
           <div className="contact-page__grid">
-            <a className="contact-page__card contact-page__card--link" href={`mailto:${SUPPORT_EMAIL}`}>
+            <a className="contact-page__card contact-page__card--link" href={`mailto:${CONTACT_EMAILS.support}`}>
               <div className="contact-page__card-head">
                 <span className="contact-page__card-icon-wrap" aria-hidden>
                   <IconMail />
@@ -145,7 +152,7 @@ export default function Contact() {
                 <h2 className="contact-page__card-title">{t("contact.emailTitle")}</h2>
               </div>
               <p className="contact-page__card-text">{t("contact.emailText")}</p>
-              <p className="contact-page__card-cta">{SUPPORT_EMAIL}</p>
+              <p className="contact-page__card-cta">{CONTACT_EMAILS.support}</p>
             </a>
 
             <div className="contact-page__card">
@@ -186,6 +193,44 @@ export default function Contact() {
                 {t("contact.responseEnd")}
               </p>
             </div>
+          </div>
+
+          <div className="contact-page__card" style={{ marginTop: "1rem" }}>
+            <div className="contact-page__card-head">
+              <span className="contact-page__card-icon-wrap" aria-hidden>
+                <IconMail />
+              </span>
+              <h2 className="contact-page__card-title">Email directories</h2>
+            </div>
+            <p className="contact-page__card-text" style={{ marginBottom: "0.75rem" }}>
+              Use the right inbox so we can route your message faster.
+            </p>
+            <ul className="contact-page__email-list">
+              <li>
+                <a className="contact-page__inline-link" href={`mailto:${CONTACT_EMAILS.main}`}>
+                  {CONTACT_EMAILS.main}
+                </a>{" "}
+                <span className="muted">— main contact</span>
+              </li>
+              <li>
+                <a className="contact-page__inline-link" href={`mailto:${CONTACT_EMAILS.hiring}`}>
+                  {CONTACT_EMAILS.hiring}
+                </a>{" "}
+                <span className="muted">— hiring / careers</span>
+              </li>
+              <li>
+                <a className="contact-page__inline-link" href={`mailto:${CONTACT_EMAILS.support}`}>
+                  {CONTACT_EMAILS.support}
+                </a>{" "}
+                <span className="muted">— product support</span>
+              </li>
+              <li>
+                <a className="contact-page__inline-link" href={`mailto:${CONTACT_EMAILS.admin}`}>
+                  {CONTACT_EMAILS.admin}
+                </a>{" "}
+                <span className="muted">— admin / business</span>
+              </li>
+            </ul>
           </div>
 
           <p className="contact-page__back muted">

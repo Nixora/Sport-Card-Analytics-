@@ -1,9 +1,10 @@
-import { lazy, Suspense, useLayoutEffect, useRef } from "react";
-import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import SiteHeader from "./components/SiteHeader.jsx";
 import SiteFooter from "./components/SiteFooter.jsx";
 import PageRouteFallback from "./components/PageRouteFallback.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
 
 const Cards = lazy(() => import("./pages/Cards.jsx"));
 const CardDetail = lazy(() => import("./pages/CardDetail.jsx"));
@@ -18,15 +19,61 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const FAQ = lazy(() => import("./pages/FAQ.jsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
+const Admin = lazy(() => import("./pages/Admin.jsx"));
 
 function RedirectAnalyticsToCard() {
   const { cardKey } = useParams();
   return <Navigate to={`/cards/${encodeURIComponent(cardKey)}`} replace />;
 }
 
+function BreadcrumbNav({ items }) {
+  return (
+    <nav className="body-path-label" aria-label="Breadcrumb">
+      {items.map((it, idx) => (
+        <span key={`${it.to}-${idx}`} className="body-path-label__item">
+          <Link className="body-path-label__link" to={it.to}>
+            {idx === 0 ? (
+              <span className="body-path-label__home" aria-label="Home">
+                <svg
+                  className="body-path-label__home-ico"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 10.5L12 4l8 6.5V20a1.5 1.5 0 01-1.5 1.5H5.5A1.5 1.5 0 014 20v-9.5z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10 21v-7a2 2 0 012-2h0a2 2 0 012 2v7"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="body-path-label__home-text">{it.label}</span>
+              </span>
+            ) : (
+              it.label
+            )}
+          </Link>
+          {idx < items.length - 1 ? <span className="body-path-label__sep"> / </span> : null}
+        </span>
+      ))}
+    </nav>
+  );
+}
+
 export default function App() {
   const layoutRef = useRef(null);
   const headerRef = useRef(null);
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
 
   useLayoutEffect(() => {
     const layout = layoutRef.current;
@@ -46,23 +93,37 @@ export default function App() {
   const normalizedPath =
     pathname === "/cards" ? "/marketplace" : pathname;
   const showBodyPath = normalizedPath !== "/";
-  let bodyPathLabel = "";
-  if (normalizedPath.startsWith("/cards/")) {
-    const cardKey = decodeURIComponent(normalizedPath.replace("/cards/", ""));
-    bodyPathLabel = `home / marketplace / ${cardKey}`;
-  } else if (normalizedPath.startsWith("/analytics/")) {
-    const cardKey = decodeURIComponent(normalizedPath.replace("/analytics/", ""));
-    bodyPathLabel = `home / marketplace / ${cardKey}`;
-  } else if (normalizedPath === "/community/new") {
-    bodyPathLabel = "home / community / new";
-  } else if (normalizedPath.startsWith("/community/") && normalizedPath !== "/community") {
-    const tail = decodeURIComponent(normalizedPath.replace(/^\/community\//, ""));
-    bodyPathLabel = `home / community / ${tail}`;
-  } else if (normalizedPath.startsWith("/u/")) {
-    const slug = decodeURIComponent(normalizedPath.replace(/^\/u\//, ""));
-    bodyPathLabel = `home / profile / ${slug}`;
-  } else {
-    bodyPathLabel = `home / ${normalizedPath.replace(/^\//, "")}`;
+  let bodyPathItems = null;
+  if (showBodyPath) {
+    bodyPathItems = [{ label: "home", to: "/" }];
+    if (normalizedPath.startsWith("/cards/")) {
+      const cardKey = decodeURIComponent(normalizedPath.replace("/cards/", ""));
+      bodyPathItems.push({ label: "marketplace", to: "/marketplace" });
+      bodyPathItems.push({ label: cardKey, to: `/cards/${encodeURIComponent(cardKey)}` });
+    } else if (normalizedPath.startsWith("/analytics/")) {
+      const cardKey = decodeURIComponent(normalizedPath.replace("/analytics/", ""));
+      bodyPathItems.push({ label: "marketplace", to: "/marketplace" });
+      bodyPathItems.push({ label: cardKey, to: `/cards/${encodeURIComponent(cardKey)}` });
+    } else if (normalizedPath === "/community/new") {
+      bodyPathItems.push({ label: "community", to: "/community" });
+      bodyPathItems.push({ label: "new", to: "/community/new" });
+    } else if (normalizedPath.startsWith("/community/") && normalizedPath !== "/community") {
+      const tail = decodeURIComponent(normalizedPath.replace(/^\/community\//, ""));
+      bodyPathItems.push({ label: "community", to: "/community" });
+      bodyPathItems.push({ label: tail, to: `/community/${encodeURIComponent(tail)}` });
+    } else if (normalizedPath.startsWith("/u/")) {
+      const slug = decodeURIComponent(normalizedPath.replace(/^\/u\//, ""));
+      bodyPathItems.push({ label: "profile", to: "/profile" });
+      bodyPathItems.push({ label: slug, to: `/u/${encodeURIComponent(slug)}` });
+    } else if (normalizedPath.startsWith("/sellers/") && normalizedPath !== "/sellers") {
+      const seller = decodeURIComponent(normalizedPath.replace(/^\/sellers\//, ""));
+      bodyPathItems.push({ label: "seller-analysis", to: "/seller-analysis" });
+      bodyPathItems.push({ label: seller, to: `/sellers/${encodeURIComponent(seller)}` });
+    } else if (normalizedPath === "/profile") {
+      bodyPathItems.push({ label: "profile", to: "/profile" });
+    } else {
+      bodyPathItems.push({ label: normalizedPath.replace(/^\//, ""), to: normalizedPath });
+    }
   }
 
   const marketplaceListRoute = normalizedPath === "/marketplace";
@@ -75,6 +136,21 @@ export default function App() {
     normalizedPath === "/contact" ||
     normalizedPath === "/faq";
 
+  // Signed-out users can access a small public set of pages.
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) return;
+    const allowed =
+      pathname === "/" ||
+      pathname === "/marketplace" ||
+      pathname === "/cards" ||
+      pathname === "/contact" ||
+      pathname === "/privacy-policy";
+    if (allowed) return;
+    window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+    navigate("/", { replace: true });
+  }, [authLoading, user, pathname, navigate]);
+
   return (
     <div ref={layoutRef} className="layout">
       <SiteHeader ref={headerRef} />
@@ -82,7 +158,7 @@ export default function App() {
         <div
           className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}${privacyShellRoute ? " content-shell--privacy" : ""}`}
         >
-          {showBodyPath && <p className="body-path-label">{bodyPathLabel}</p>}
+          {bodyPathItems ? <BreadcrumbNav items={bodyPathItems} /> : null}
           <Suspense fallback={<PageRouteFallback />}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
@@ -108,6 +184,7 @@ export default function App() {
               <Route path="/sign-in" element={<Navigate to="/" replace />} />
               <Route path="/sign-up" element={<Navigate to="/" replace />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/admin" element={<Admin />} />
             </Routes>
           </Suspense>
         </div>

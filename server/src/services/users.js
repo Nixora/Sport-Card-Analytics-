@@ -350,11 +350,17 @@ function publicUser(user) {
   if (!user) return null;
   const images = Array.isArray(user.images) ? user.images : [];
   const av = user.avatar && user.avatar.id ? user.avatar : null;
+  const emailLc = String(user.email || "").trim().toLowerCase();
+  const is_admin =
+    Boolean(emailLc) &&
+    Array.isArray(config.adminEmails) &&
+    config.adminEmails.includes(emailLc);
   return {
     id: String(user._id),
     email: user.email,
     display_name: user.display_name || null,
     display_name_lc: user.display_name_lc || null,
+    is_admin,
     is_ebay_seller: Boolean(user.is_ebay_seller),
     ebay_seller_username: user.ebay_seller_username || null,
     favorite_athletes: user.favorite_athletes || [],

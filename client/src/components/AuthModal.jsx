@@ -1,13 +1,50 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  fetchHumanStatus,
   requestPasswordReset,
   signIn,
   signUpRequestOtp,
   signUpVerifyOtp,
+  verifyHumanToken,
 } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
+
+const SITE_KEY = String(import.meta.env.VITE_TURNSTILE_SITE_KEY || "").trim();
+
+function loadTurnstileScript() {
+  if (typeof window !== "undefined" && window.turnstile) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-nix-turnstile="1"]');
+    if (existing) {
+      const t0 = Date.now();
+      const wait = () => {
+        if (window.turnstile) {
+          resolve();
+          return;
+        }
+        if (Date.now() - t0 > 15_000) {
+          reject(new Error("timeout"));
+          return;
+        }
+        setTimeout(wait, 50);
+      };
+      wait();
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    s.async = true;
+    s.defer = true;
+    s.dataset.nixTurnstile = "1";
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("script"));
+    document.head.appendChild(s);
+  });
+}
 
 function IconClose() {
   return (
@@ -24,6 +61,8 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
   const emailRef = useRef(null);
   const displayNameRef = useRef(null);
   const otpRef = useRef(null);
+  const turnstileHostRef = useRef(null);
+  const turnstileIdRef = useRef(null);
   const { setUser } = useAuth();
 
   const [displayName, setDisplayName] = useState("");
@@ -41,6 +80,11 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
   const [forgotStep, setForgotStep] = useState("email");
   const [forgotEmail, setForgotEmail] = useState("");
 
+  const [humanPhase, setHumanPhase] = useState("checking"); // checking | ok | challenge
+  const [humanErr, setHumanErr] = useState("");
+  const [humanRequired, setHumanRequired] = useState(false);
+  const [humanVerified, setHumanVerified] = useState(false);
+
   const isSignUp = mode === "signup";
   const isForgot = mode === "forgot";
 
@@ -55,6 +99,10 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
     setEmailMasked("");
     setForgotStep("email");
     setForgotEmail("");
+    setHumanErr("");
+    setHumanPhase("checking");
+    setHumanRequired(false);
+    setHumanVerified(false);
     const t = requestAnimationFrame(() => {
       if (mode === "signup") displayNameRef.current?.focus();
       else if (mode === "forgot") emailRef.current?.focus();
@@ -62,6 +110,116 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
     });
     return () => cancelAnimationFrame(t);
   }, [mode]);
+
+  useEffect(() => {
+    // Only enforce/visualize human check during sign-up.
+    if (!isSignUp) {
+      setHumanRequired(false);
+      setHumanErr("");
+      setHumanPhase("ok");
+      setHumanVerified(false);
+      return;
+    }
+    let cancelled = false;
+    const timeoutMs = 4500;
+    (async () => {
+      try {
+        const status = await Promise.race([
+          fetchHumanStatus(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), timeoutMs)),
+        ]);
+        if (cancelled) return;
+        const required = Boolean(status?.required);
+        setHumanRequired(required);
+        // Always require an explicit Turnstile pass inside the sign-up modal when enabled.
+        setHumanVerified(false);
+        if (!required) {
+          setHumanErr("");
+          setHumanPhase("ok");
+          return;
+        }
+        if (!SITE_KEY) {
+          setHumanErr(t("humanGate.siteKeyMissing"));
+          setHumanPhase("challenge");
+          return;
+        }
+        setHumanErr("");
+        setHumanPhase("challenge");
+      } catch (e) {
+        // If status fails (API down / proxy error), don't block auth flows.
+        if (!cancelled) {
+          const msg =
+            e?.message === "timeout"
+              ? "Human check status timed out (API not reachable)."
+              : "Human check status unavailable (API not reachable).";
+          setHumanErr(msg);
+          setHumanRequired(false);
+          setHumanPhase("ok");
+          setHumanVerified(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignUp, t]);
+
+  useEffect(() => {
+    if (!isSignUp) return;
+    if (!humanRequired || !SITE_KEY) return;
+    const host = turnstileHostRef.current;
+    if (!host) return;
+    let cancelled = false;
+    turnstileIdRef.current = null;
+
+    (async () => {
+      try {
+        await loadTurnstileScript();
+        if (cancelled || !host.isConnected) return;
+        const id = window.turnstile.render(host, {
+          sitekey: SITE_KEY,
+          callback: async (token) => {
+            try {
+              await verifyHumanToken(token);
+              setHumanErr("");
+              setHumanVerified(true);
+              setHumanPhase("challenge");
+            } catch (e) {
+              setHumanErr(e?.message || t("humanGate.verificationFailed"));
+              const wid = turnstileIdRef.current;
+              if (wid != null && window.turnstile) {
+                try {
+                  window.turnstile.reset(wid);
+                } catch {
+                  /* ignore */
+                }
+              }
+            }
+          },
+          "error-callback": () => {
+            setHumanErr(t("humanGate.verificationFailed"));
+          },
+        });
+        turnstileIdRef.current = id;
+      } catch {
+        if (!cancelled) setHumanErr(t("humanGate.loadScriptFailed"));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      const wid = turnstileIdRef.current;
+      turnstileIdRef.current = null;
+      if (wid != null && typeof window !== "undefined" && window.turnstile) {
+        try {
+          window.turnstile.remove(wid);
+        } catch {
+          /* ignore */
+        }
+      }
+      host.replaceChildren();
+    };
+  }, [humanRequired, SITE_KEY, isSignUp, t]);
 
   useEffect(() => {
     if (isSignUp && signupStep === "otp") {
@@ -74,6 +232,11 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
+    if (isSignUp && humanRequired && !humanVerified) {
+      if (humanPhase === "checking") setErr(t("common.loading"));
+      else setErr(humanErr || t("humanGate.hint"));
+      return;
+    }
     if (isSignUp && password !== password2) {
       setErr(t("auth.errPasswordMismatch"));
       return;
@@ -185,10 +348,17 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
             <div className="auth-modal__header-text">
               <h2 id={titleId} className="auth-modal__title">
                 {title}
+                {busy || (isSignUp && humanPhase === "checking") ? (
+                  <span className="auth-modal__title-spin" aria-hidden>
+                    <span className="auth-modal__mini-spinner" />
+                  </span>
+                ) : null}
               </h2>
-              <p id={subtitleId} className="auth-modal__subtitle">
-                {subtitle}
-              </p>
+              {subtitle ? (
+                <p id={subtitleId} className="auth-modal__subtitle">
+                  {subtitle}
+                </p>
+              ) : null}
             </div>
             <button type="button" className="auth-modal__close" aria-label={t("common.close")} onClick={onClose}>
               <IconClose />
@@ -371,9 +541,41 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                   </div>
                 ) : null}
 
-                <button type="submit" className="auth-modal__cta" disabled={busy}>
+                <button
+                  type="submit"
+                  className="auth-modal__cta"
+                  disabled={busy || (isSignUp && humanRequired && !humanVerified)}
+                >
                   {busy ? t("auth.wait") : isSignUp ? t("auth.sendCode") : t("auth.continue")}
                 </button>
+
+                {isSignUp ? (
+                  <div className="auth-modal__turnstile auth-modal__turnstile--below-cta">
+                    {humanRequired ? (
+                      <>
+                        {!humanVerified ? (
+                          <p className="muted" style={{ margin: "0.65rem 0 0.65rem" }}>
+                            {t("humanGate.hint")}
+                          </p>
+                        ) : null}
+                        <div ref={turnstileHostRef} />
+                        {humanErr ? (
+                          <p className="err" style={{ margin: "0.65rem 0 0" }}>
+                            {humanErr}
+                          </p>
+                        ) : null}
+                      </>
+                    ) : humanPhase === "checking" ? (
+                      <p className="muted" style={{ margin: "0.65rem 0 0" }}>
+                        {t("common.loading")}
+                      </p>
+                    ) : humanErr ? (
+                      <p className="muted" style={{ margin: "0.65rem 0 0" }}>
+                        {humanErr}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="auth-modal__footer">

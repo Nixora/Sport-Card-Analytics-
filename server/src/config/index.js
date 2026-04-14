@@ -31,6 +31,16 @@ function stripTrailingSlashes(s) {
     .replace(/\/+$/, "");
 }
 
+function splitList(raw) {
+  if (raw == null) return [];
+  const s = String(raw).trim();
+  if (!s) return [];
+  return s
+    .split(/[\n,;]+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
 /** Base URL for password-reset links in email (e.g. https://nixsora.com). Defaults to first CLIENT_ORIGIN. */
 const publicAppUrl =
   stripTrailingSlashes(req("PUBLIC_APP_URL", "")) ||
@@ -113,6 +123,8 @@ const resendFromLine = (() => {
   return normalizeEnvString(line);
 })();
 
+const adminEmails = splitList(req("ADMIN_EMAILS", "")).map((s) => s.toLowerCase());
+
 module.exports = {
   port: parseInt(req("API_PORT", "5000"), 10) || 5000,
   apiListenHost: req("API_LISTEN_HOST", "0.0.0.0"),
@@ -154,6 +166,8 @@ module.exports = {
   resendApiKey: req("RESEND_API_KEY", ""),
   /** Full From header value for Resend, e.g. `Nixsora <no-reply@nixsora.com>` */
   resendFromLine,
+  /** Comma/newline separated list of admin user emails (lowercased). */
+  adminEmails,
   appPublicName: req("APP_PUBLIC_NAME", "Nixsora"),
   /**
    * First-visit human check (Cloudflare Turnstile). Requires TURNSTILE_SECRET_KEY.

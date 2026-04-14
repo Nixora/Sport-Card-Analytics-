@@ -450,74 +450,78 @@ export default function Community() {
         <p className="community-forum__lead">{t("community.pageLead")}</p>
       </header>
 
-      <div className="community-forum__list-wrap">
-        <div className="community-forum__list-toolbar">
-          <h2 className="community-forum__list-heading">{t("community.topicsHeading")}</h2>
-          {canCompose ? (
-            <Link className="community-forum__new-post" to="/community/new">
-              {t("community.newPost")}
-            </Link>
+      {listLoading ? (
+        <div className="community-forum__body-loading" aria-busy="true">
+          <DataLoading variant="section" />
+        </div>
+      ) : (
+        <div className="community-forum__list-wrap">
+          <div className="community-forum__list-toolbar">
+            <h2 className="community-forum__list-heading">{t("community.topicsHeading")}</h2>
+            {canCompose ? (
+              <Link className="community-forum__new-post" to="/community/new">
+                {t("community.newPost")}
+              </Link>
+            ) : (
+              <span className="muted community-forum__hint" style={{ margin: 0 }}>
+                {authLoading ? (
+                  <span className="community-forum__auth-spin">
+                    <AntdSpinDots size="sm" />
+                  </span>
+                ) : (
+                  t("community.signInToPost")
+                )}
+              </span>
+            )}
+          </div>
+          {listErr ? (
+            <p className="err" style={{ padding: "0.65rem 1.15rem 1rem" }}>
+              {listErr}
+            </p>
+          ) : list.length === 0 ? (
+            <p className="muted" style={{ padding: "0.65rem 1.15rem 1rem" }}>
+              {t("community.noTopics")}
+            </p>
           ) : (
-            <span className="muted community-forum__hint" style={{ margin: 0 }}>
-              {authLoading ? (
-                <span className="community-forum__auth-spin">
-                  <AntdSpinDots size="sm" />
-                </span>
-              ) : (
-                t("community.signInToPost")
-              )}
-            </span>
+            <ul className="community-forum__list">
+              {list.map((a) => {
+                const { text, showViewMore } = listSnippetParts(a.excerpt);
+                const detailPath = `/community/${a.id}`;
+                return (
+                  <li key={a.id} className="community-forum__list-item">
+                    <div className="community-forum__list-row">
+                      <AvatarInitial name={a.authorDisplayName} />
+                      <div className="community-forum__list-main">
+                        <h3 className="community-forum__list-title">
+                          <Link to={detailPath}>{a.title}</Link>
+                        </h3>
+                        <p className="community-forum__list-snippet">
+                          {text}
+                          {showViewMore ? (
+                            <>
+                              {" "}
+                              <Link to={detailPath} className="community-forum__view-more">
+                                {t("community.viewMore")}
+                              </Link>
+                            </>
+                          ) : null}
+                        </p>
+                        <TagRow tags={a.tags} />
+                        <p className="community-forum__list-byline">
+                          {t("community.bylineBy")}{" "}
+                          <span className="community-forum__author-name">{a.authorDisplayName}</span> •{" "}
+                          {t("community.roleCollector")} • {t("community.name")}
+                        </p>
+                        <ForumStats views={a.viewCount} comments={a.answerCount} likes={a.likeCount} />
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
-        {listLoading ? (
-          <DataLoading variant="compact" />
-        ) : listErr ? (
-          <p className="err" style={{ padding: "0.65rem 1.15rem 1rem" }}>
-            {listErr}
-          </p>
-        ) : list.length === 0 ? (
-          <p className="muted" style={{ padding: "0.65rem 1.15rem 1rem" }}>
-            {t("community.noTopics")}
-          </p>
-        ) : (
-          <ul className="community-forum__list">
-            {list.map((a) => {
-              const { text, showViewMore } = listSnippetParts(a.excerpt);
-              const detailPath = `/community/${a.id}`;
-              return (
-                <li key={a.id} className="community-forum__list-item">
-                  <div className="community-forum__list-row">
-                    <AvatarInitial name={a.authorDisplayName} />
-                    <div className="community-forum__list-main">
-                      <h3 className="community-forum__list-title">
-                        <Link to={detailPath}>{a.title}</Link>
-                      </h3>
-                      <p className="community-forum__list-snippet">
-                        {text}
-                        {showViewMore ? (
-                          <>
-                            {" "}
-                            <Link to={detailPath} className="community-forum__view-more">
-                              {t("community.viewMore")}
-                            </Link>
-                          </>
-                        ) : null}
-                      </p>
-                      <TagRow tags={a.tags} />
-                      <p className="community-forum__list-byline">
-                        {t("community.bylineBy")}{" "}
-                        <span className="community-forum__author-name">{a.authorDisplayName}</span> •{" "}
-                        {t("community.roleCollector")} • {t("community.name")}
-                      </p>
-                      <ForumStats views={a.viewCount} comments={a.answerCount} likes={a.likeCount} />
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+      )}
     </div>
   );
 }

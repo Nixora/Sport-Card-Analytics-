@@ -13,3 +13,4 @@ client/dist/
 dist/
 npm-debug.log*
 refer
+scripts

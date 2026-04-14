@@ -16,6 +16,104 @@ import { useAuth } from "../context/AuthContext.jsx";
 const TAG_MAX_LEN = 120;
 const TAG_MAX_COUNT = 200;
 
+function IconMapPin({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M12 22s7-4.5 7-11a7 7 0 10-14 0c0 6.5 7 11 7 11z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="11" r="2.5" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function IconUserTag({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M20 21v-1.5a4.5 4.5 0 00-4.5-4.5H8.5A4.5 4.5 0 004 19.5V21"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function IconStore({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M4 10V20h16V10"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 10l2-6h14l2 6"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M9 20v-7h6v7" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconTags({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M20 13l-7.6 7.6a2 2 0 01-2.8 0L3 13V4h9l8 9z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
 function TagListField({ label, hint, value, onChange, disabled, placeholder }) {
   const [draft, setDraft] = useState("");
 
@@ -117,6 +215,20 @@ function ProfileBackBar({ onBack }) {
   );
 }
 
+function FactRow({ icon: Icon, label, children }) {
+  return (
+    <div className="profile-page__fact-row">
+      <div className="profile-page__fact-ico" aria-hidden>
+        <Icon />
+      </div>
+      <div className="profile-page__fact-main">
+        <p className="profile-page__fact-label">{label}</p>
+        <div className="profile-page__fact-value">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function PublicProfilePage() {
   const { displayName: rawSlug } = useParams();
   const navigate = useNavigate();
@@ -205,28 +317,21 @@ function PublicProfilePage() {
             </div>
           </div>
 
-          <div className="profile-page__view-section">
-            <h2 className="profile-page__view-h">Country</h2>
-            <p className="profile-page__view-p">{profile.country?.trim() || "—"}</p>
-          </div>
-
-          <div className="profile-page__view-section">
-            <h2 className="profile-page__view-h">eBay seller</h2>
-            <p className="profile-page__view-p">
-              {profile.is_ebay_seller
-                ? profile.ebay_seller_username || "Yes"
-                : "No"}
-            </p>
-          </div>
-
-          <div className="profile-page__view-section">
-            <h2 className="profile-page__view-h">Favorite sports figures</h2>
-            <ChipList items={profile.favorite_athletes} />
-          </div>
-
-          <div className="profile-page__view-section">
-            <h2 className="profile-page__view-h">Favorite or interested sports</h2>
-            <ChipList items={profile.favorite_sports} />
+          <div className="profile-page__facts">
+            <FactRow icon={IconMapPin} label="Location">
+              <p className="profile-page__view-p">{profile.country?.trim() || "—"}</p>
+            </FactRow>
+            <FactRow icon={IconStore} label="eBay seller">
+              <p className="profile-page__view-p">
+                {profile.is_ebay_seller ? profile.ebay_seller_username || "Yes" : "No"}
+              </p>
+            </FactRow>
+            <FactRow icon={IconUserTag} label="Favorite sports figures">
+              <ChipList items={profile.favorite_athletes} />
+            </FactRow>
+            <FactRow icon={IconTags} label="Favorite or interested sports">
+              <ChipList items={profile.favorite_sports} />
+            </FactRow>
           </div>
         </div>
       )}
@@ -401,254 +506,251 @@ function MyProfilePage() {
         <>
           <ProfileBackBar onBack={onBack} />
 
-          <div className="panel profile-page__panel">
-            {!editing && ok ? <p className="profile-page__ok profile-page__msg">{ok}</p> : null}
-            {!editing ? (
-              <>
-                <div className="profile-page__view-actions">
-                  <button type="button" className="hero-btn hero-btn--solid profile-page__edit" onClick={startEdit}>
-                    <span className="hero-btn__label">Edit profile</span>
-                  </button>
-                </div>
-
-                <div className="profile-page__view-head">
-                  <div className="profile-page__view-avatar-wrap">
-                    {avatarSrc ? (
-                      <img src={avatarSrc} alt="" className="profile-page__view-avatar" />
-                    ) : (
-                      <div className="profile-page__avatar-placeholder muted profile-page__view-avatar-ph">
-                        No photo
-                      </div>
-                    )}
+          <div className="profile-page__grid">
+            <div className="panel profile-page__panel">
+              {!editing && ok ? <p className="profile-page__ok profile-page__msg">{ok}</p> : null}
+              {!editing ? (
+                <>
+                  <div className="profile-page__view-actions">
+                    <button type="button" className="hero-btn hero-btn--solid profile-page__edit" onClick={startEdit}>
+                      <span className="hero-btn__label">Edit profile</span>
+                    </button>
                   </div>
-                  <div className="profile-page__view-head-text">
-                    <h1 className="profile-page__title">
-                      {user?.display_name?.trim() ? user.display_name.trim() : "Your profile"}
-                    </h1>
-                    <p className="muted profile-page__email">{user?.email}</p>
-                    <p className="muted profile-page__hint profile-page__display-readonly-hint">
-                      {needsDisplayName
-                        ? "Add a unique display name when you edit (one time). It will show on your public profile."
-                        : "Display name can’t be changed after it’s set."}
-                    </p>
-                    {user?.display_name_lc ? (
-                      <p className="muted profile-page__hint">
-                        <Link to={publicProfilePath(user.display_name_lc)} className="profile-page__inline-link">
-                          View public profile
-                        </Link>{" "}
-                        (others don&apos;t see your email)
+
+                  <div className="profile-page__view-head">
+                    <div className="profile-page__view-avatar-wrap">
+                      {avatarSrc ? (
+                        <img src={avatarSrc} alt="" className="profile-page__view-avatar" />
+                      ) : (
+                        <div className="profile-page__avatar-placeholder muted profile-page__view-avatar-ph">
+                          No photo
+                        </div>
+                      )}
+                    </div>
+                    <div className="profile-page__view-head-text">
+                      <h1 className="profile-page__title">
+                        {user?.display_name?.trim() ? user.display_name.trim() : "Your profile"}
+                      </h1>
+                      <p className="muted profile-page__email">{user?.email}</p>
+                      <p className="muted profile-page__hint profile-page__display-readonly-hint">
+                        {needsDisplayName
+                          ? "Add a unique display name when you edit (one time). It will show on your public profile."
+                          : "Display name can’t be changed after it’s set."}
                       </p>
-                    ) : null}
+                      {user?.display_name_lc ? (
+                        <p className="muted profile-page__hint">
+                          <Link to={publicProfilePath(user.display_name_lc)} className="profile-page__inline-link">
+                            View public profile
+                          </Link>{" "}
+                          (others don&apos;t see your email)
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
 
-                <div className="profile-page__view-section">
-                  <h2 className="profile-page__view-h">Display name</h2>
-                  <p className="profile-page__view-p">
-                    {user?.display_name?.trim() ? user.display_name.trim() : "—"}
-                  </p>
-                </div>
+                  <div className="profile-page__view-section">
+                    <h2 className="profile-page__view-h">Display name</h2>
+                    <p className="profile-page__view-p">{user?.display_name?.trim() ? user.display_name.trim() : "—"}</p>
+                  </div>
 
-                <div className="profile-page__view-section">
-                  <h2 className="profile-page__view-h">Country</h2>
-                  <p className="profile-page__view-p">{user?.country?.trim() || "—"}</p>
-                </div>
+                  <div className="profile-page__view-section">
+                    <h2 className="profile-page__view-h">Country</h2>
+                    <p className="profile-page__view-p">{user?.country?.trim() || "—"}</p>
+                  </div>
 
-                <div className="profile-page__view-section">
-                  <h2 className="profile-page__view-h">eBay seller</h2>
-                  <p className="profile-page__view-p">
-                    {user?.is_ebay_seller ? user?.ebay_seller_username || "Yes" : "No"}
-                  </p>
-                </div>
+                  <div className="profile-page__view-section">
+                    <h2 className="profile-page__view-h">eBay seller</h2>
+                    <p className="profile-page__view-p">
+                      {user?.is_ebay_seller ? user?.ebay_seller_username || "Yes" : "No"}
+                    </p>
+                  </div>
 
-                <div className="profile-page__view-section">
-                  <h2 className="profile-page__view-h">Favorite sports figures</h2>
-                  <ChipList items={user?.favorite_athletes} />
-                </div>
+                  <div className="profile-page__view-section">
+                    <h2 className="profile-page__view-h">Favorite sports figures</h2>
+                    <ChipList items={user?.favorite_athletes} />
+                  </div>
 
-                <div className="profile-page__view-section">
-                  <h2 className="profile-page__view-h">Favorite or interested sports</h2>
-                  <ChipList items={user?.favorite_sports} />
-                </div>
-              </>
-            ) : (
-              <form
-                id="profile-edit-form"
-                className="profile-page__form profile-page__form--edit"
-                onSubmit={onSubmit}
-              >
-                <div className="profile-page__edit-actions-top">
-                  <button type="button" className="profile-page__cancel" onClick={cancelEdit} disabled={busy}>
-                    Cancel
-                  </button>
-                </div>
+                  <div className="profile-page__view-section">
+                    <h2 className="profile-page__view-h">Favorite or interested sports</h2>
+                    <ChipList items={user?.favorite_sports} />
+                  </div>
+                </>
+              ) : (
+                <form id="profile-edit-form" className="profile-page__form profile-page__form--edit" onSubmit={onSubmit}>
+                  <div className="profile-page__edit-actions-top">
+                    <button type="button" className="profile-page__cancel" onClick={cancelEdit} disabled={busy}>
+                      Cancel
+                    </button>
+                  </div>
 
-                {err ? <p className="err profile-page__msg">{err}</p> : null}
-                {ok ? <p className="profile-page__ok profile-page__msg">{ok}</p> : null}
+                  {err ? <p className="err profile-page__msg">{err}</p> : null}
+                  {ok ? <p className="profile-page__ok profile-page__msg">{ok}</p> : null}
 
-                <div className="profile-page__field profile-page__field--photo">
-                  <span className="profile-page__label">Photo</span>
-                  <input
-                    ref={photoInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                    className="sr-only"
-                    tabIndex={-1}
-                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-                  />
-                  <button
-                    type="button"
-                    className="profile-page__photo-trigger profile-page__photo-trigger--bare"
-                    disabled={busy}
-                    onClick={() => photoInputRef.current?.click()}
-                    aria-label="Choose profile photo"
-                  >
-                    {avatarSrc ? (
-                      <img src={avatarSrc} alt="" className="profile-page__avatar-preview" />
-                    ) : (
-                      <div className="profile-page__avatar-placeholder profile-page__avatar-placeholder--bare">
-                        <span className="profile-page__photo-trigger__cta">+</span>
-                      </div>
-                    )}
-                  </button>
-                </div>
+                  <div className="profile-page__field profile-page__field--photo">
+                    <span className="profile-page__label">Photo</span>
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      className="sr-only"
+                      tabIndex={-1}
+                      onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                    />
+                    <button
+                      type="button"
+                      className="profile-page__photo-trigger profile-page__photo-trigger--bare"
+                      disabled={busy}
+                      onClick={() => photoInputRef.current?.click()}
+                      aria-label="Choose profile photo"
+                    >
+                      {avatarSrc ? (
+                        <img src={avatarSrc} alt="" className="profile-page__avatar-preview" />
+                      ) : (
+                        <div className="profile-page__avatar-placeholder profile-page__avatar-placeholder--bare">
+                          <span className="profile-page__photo-trigger__cta">+</span>
+                        </div>
+                      )}
+                    </button>
+                  </div>
 
-                {needsDisplayName ? (
+                  {needsDisplayName ? (
+                    <label className="profile-page__field">
+                      <span className="profile-page__label">Display name</span>
+                      <span className="muted profile-page__hint">
+                        Unique, 2–40 characters. Letters, numbers, spaces, and . _ &apos; -
+                      </span>
+                      <input
+                        className="profile-page__input"
+                        type="text"
+                        value={draftDisplayName}
+                        onChange={(e) => setDraftDisplayName(e.target.value)}
+                        autoComplete="nickname"
+                        placeholder="Your public name"
+                        minLength={2}
+                        maxLength={40}
+                        required
+                      />
+                    </label>
+                  ) : (
+                    <div className="profile-page__field profile-page__display-readonly">
+                      <span className="profile-page__label">Display name</span>
+                      <p className="profile-page__display-value">
+                        {user?.display_name?.trim() ? user.display_name.trim() : "—"}
+                      </p>
+                    </div>
+                  )}
+
                   <label className="profile-page__field">
-                    <span className="profile-page__label">Display name</span>
-                    <span className="muted profile-page__hint">
-                      Unique, 2–40 characters. Letters, numbers, spaces, and . _ &apos; -
-                    </span>
+                    <span className="profile-page__label">Country</span>
                     <input
                       className="profile-page__input"
                       type="text"
-                      value={draftDisplayName}
-                      onChange={(e) => setDraftDisplayName(e.target.value)}
-                      autoComplete="nickname"
-                      placeholder="Your public name"
-                      minLength={2}
-                      maxLength={40}
-                      required
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder="e.g. United States"
+                      maxLength={120}
                     />
                   </label>
-                ) : (
-                  <div className="profile-page__field profile-page__display-readonly">
-                    <span className="profile-page__label">Display name</span>
-                    <p className="profile-page__display-value">
-                      {user?.display_name?.trim() ? user.display_name.trim() : "—"}
-                    </p>
-                  </div>
-                )}
 
+                  <fieldset className="profile-page__fieldset">
+                    <legend className="profile-page__legend">Are you a seller on eBay?</legend>
+                    <label className="profile-page__radio">
+                      <input type="radio" name="ebay" checked={isEbay === "no"} onChange={() => setIsEbay("no")} />
+                      <span>No</span>
+                    </label>
+                    <label className="profile-page__radio">
+                      <input type="radio" name="ebay" checked={isEbay === "yes"} onChange={() => setIsEbay("yes")} />
+                      <span>Yes</span>
+                    </label>
+                  </fieldset>
+
+                  {isEbay === "yes" ? (
+                    <label className="profile-page__field">
+                      <span className="profile-page__label">eBay seller username</span>
+                      <input
+                        className="profile-page__input"
+                        type="text"
+                        value={ebayUsername}
+                        onChange={(e) => setEbayUsername(e.target.value)}
+                        placeholder="Your public seller name"
+                      />
+                    </label>
+                  ) : null}
+
+                  <TagListField
+                    label="Favorite sports figures"
+                    hint="Type a name, then Add or press Enter. You can separate several names with commas in one go. Saved when you click Save profile."
+                    value={selectedAthletes}
+                    onChange={setSelectedAthletes}
+                    disabled={busy}
+                    placeholder="e.g. Ken Griffey Jr."
+                  />
+
+                  <TagListField
+                    label="Favorite or interested sports"
+                    hint="Type a sport, then Add or press Enter. Comma-separated works too. Saved when you click Save profile."
+                    value={selectedSports}
+                    onChange={setSelectedSports}
+                    disabled={busy}
+                    placeholder="e.g. Baseball"
+                  />
+
+                  <button type="submit" className="hero-btn hero-btn--solid profile-page__save" disabled={busy}>
+                    <span className="hero-btn__label">{busy ? "Saving…" : "Save profile"}</span>
+                  </button>
+                </form>
+              )}
+            </div>
+
+            <div className="panel profile-page__panel profile-page__panel--password">
+              <h2 className="profile-page__view-h">Reset password</h2>
+              <p className="muted profile-page__hint">
+                Change your password while you are signed in. Use “Forgot password?” on the sign-in screen (you’ll get an
+                email link) if you are locked out.
+              </p>
+              <form className="profile-page__form profile-page__form--password" onSubmit={onPasswordSubmit}>
+                {pwErr ? <p className="err profile-page__msg">{pwErr}</p> : null}
+                {pwOk ? <p className="profile-page__ok profile-page__msg">{pwOk}</p> : null}
                 <label className="profile-page__field">
-                  <span className="profile-page__label">Country</span>
+                  <span className="profile-page__label">Current password</span>
                   <input
                     className="profile-page__input"
-                    type="text"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    placeholder="e.g. United States"
-                    maxLength={120}
+                    type="password"
+                    autoComplete="current-password"
+                    value={pwCurrent}
+                    onChange={(e) => setPwCurrent(e.target.value)}
+                    required
                   />
                 </label>
-
-                <fieldset className="profile-page__fieldset">
-                  <legend className="profile-page__legend">Are you a seller on eBay?</legend>
-                  <label className="profile-page__radio">
-                    <input type="radio" name="ebay" checked={isEbay === "no"} onChange={() => setIsEbay("no")} />
-                    <span>No</span>
-                  </label>
-                  <label className="profile-page__radio">
-                    <input type="radio" name="ebay" checked={isEbay === "yes"} onChange={() => setIsEbay("yes")} />
-                    <span>Yes</span>
-                  </label>
-                </fieldset>
-
-                {isEbay === "yes" ? (
-                  <label className="profile-page__field">
-                    <span className="profile-page__label">eBay seller username</span>
-                    <input
-                      className="profile-page__input"
-                      type="text"
-                      value={ebayUsername}
-                      onChange={(e) => setEbayUsername(e.target.value)}
-                      placeholder="Your public seller name"
-                    />
-                  </label>
-                ) : null}
-
-                <TagListField
-                  label="Favorite sports figures"
-                  hint="Type a name, then Add or press Enter. You can separate several names with commas in one go. Saved when you click Save profile."
-                  value={selectedAthletes}
-                  onChange={setSelectedAthletes}
-                  disabled={busy}
-                  placeholder="e.g. Ken Griffey Jr."
-                />
-
-                <TagListField
-                  label="Favorite or interested sports"
-                  hint="Type a sport, then Add or press Enter. Comma-separated works too. Saved when you click Save profile."
-                  value={selectedSports}
-                  onChange={setSelectedSports}
-                  disabled={busy}
-                  placeholder="e.g. Baseball"
-                />
-
-                <button type="submit" className="hero-btn hero-btn--solid profile-page__save" disabled={busy}>
-                  <span className="hero-btn__label">{busy ? "Saving…" : "Save profile"}</span>
+                <label className="profile-page__field">
+                  <span className="profile-page__label">New password</span>
+                  <input
+                    className="profile-page__input"
+                    type="password"
+                    autoComplete="new-password"
+                    value={pwNew}
+                    onChange={(e) => setPwNew(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </label>
+                <label className="profile-page__field">
+                  <span className="profile-page__label">Confirm new password</span>
+                  <input
+                    className="profile-page__input"
+                    type="password"
+                    autoComplete="new-password"
+                    value={pwNew2}
+                    onChange={(e) => setPwNew2(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </label>
+                <button type="submit" className="hero-btn hero-btn--solid profile-page__save" disabled={pwBusy}>
+                  <span className="hero-btn__label">{pwBusy ? "Updating…" : "Update password"}</span>
                 </button>
               </form>
-            )}
-          </div>
-
-          <div className="panel profile-page__panel profile-page__panel--password">
-            <h2 className="profile-page__view-h">Reset password</h2>
-            <p className="muted profile-page__hint">
-              Change your password while you are signed in.               Use “Forgot password?” on the sign-in screen (you’ll get an email link) if you are locked out.
-            </p>
-            <form className="profile-page__form profile-page__form--password" onSubmit={onPasswordSubmit}>
-              {pwErr ? <p className="err profile-page__msg">{pwErr}</p> : null}
-              {pwOk ? <p className="profile-page__ok profile-page__msg">{pwOk}</p> : null}
-              <label className="profile-page__field">
-                <span className="profile-page__label">Current password</span>
-                <input
-                  className="profile-page__input"
-                  type="password"
-                  autoComplete="current-password"
-                  value={pwCurrent}
-                  onChange={(e) => setPwCurrent(e.target.value)}
-                  required
-                />
-              </label>
-              <label className="profile-page__field">
-                <span className="profile-page__label">New password</span>
-                <input
-                  className="profile-page__input"
-                  type="password"
-                  autoComplete="new-password"
-                  value={pwNew}
-                  onChange={(e) => setPwNew(e.target.value)}
-                  required
-                  minLength={8}
-                />
-              </label>
-              <label className="profile-page__field">
-                <span className="profile-page__label">Confirm new password</span>
-                <input
-                  className="profile-page__input"
-                  type="password"
-                  autoComplete="new-password"
-                  value={pwNew2}
-                  onChange={(e) => setPwNew2(e.target.value)}
-                  required
-                  minLength={8}
-                />
-              </label>
-              <button type="submit" className="hero-btn hero-btn--solid profile-page__save" disabled={pwBusy}>
-                <span className="hero-btn__label">{pwBusy ? "Updating…" : "Update password"}</span>
-              </button>
-            </form>
+            </div>
           </div>
         </>
       )}

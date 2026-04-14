@@ -18,10 +18,13 @@ const {
 } = require("../services/users");
 const { router: authRouter, requireUser, optionalUser } = require("./auth");
 const community = require("../services/community");
+const { router: adminRouter } = require("./admin");
 
 const router = express.Router();
 
 router.use("/auth", authRouter);
+// Admin endpoints (requires signed-in user + ADMIN_EMAILS match)
+router.use("/admin", requireUser, adminRouter);
 
 function normalizePublicProfileSlug(param) {
   return decodeURIComponent(String(param || "").trim()).toLowerCase();

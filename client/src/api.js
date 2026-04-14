@@ -85,6 +85,34 @@ export function fetchCommunityArticle(id) {
   return getJson(`/api/community/articles/${encodeURIComponent(id)}`);
 }
 
+// ---- Admin ----
+
+export function fetchAdminUsers(params = {}) {
+  const q = new URLSearchParams(params).toString();
+  return authFetch(`/api/admin/users?${q}`);
+}
+
+export function deleteAdminUser(userId) {
+  return authFetch(`/api/admin/users/${encodeURIComponent(userId)}`, { method: "DELETE" });
+}
+
+export function fetchAdminCards(params = {}) {
+  const q = new URLSearchParams(params).toString();
+  return authFetch(`/api/admin/cards?${q}`);
+}
+
+export function deleteAdminCard(cardKey) {
+  return authFetch(`/api/admin/cards/${encodeURIComponent(cardKey)}`, { method: "DELETE" });
+}
+
+export function fetchAdminCommunityArticles() {
+  return authFetch("/api/admin/community/articles");
+}
+
+export function deleteAdminCommunityArticle(articleId) {
+  return authFetch(`/api/admin/community/articles/${encodeURIComponent(articleId)}`, { method: "DELETE" });
+}
+
 export function createCommunityArticle(payload) {
   return authFetch("/api/community/articles", {
     method: "POST",

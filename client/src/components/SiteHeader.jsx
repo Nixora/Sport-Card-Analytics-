@@ -128,6 +128,15 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
   }, [isHome]);
 
   useEffect(() => {
+    const onOpenAuth = (e) => {
+      const mode = e?.detail?.mode || "signin";
+      setAuthModal(mode);
+    };
+    window.addEventListener("nix:open-auth", onOpenAuth);
+    return () => window.removeEventListener("nix:open-auth", onOpenAuth);
+  }, []);
+
+  useEffect(() => {
     const onKey = (e) => {
       if (e.key !== "Escape") return;
       if (langOpen) {
@@ -199,16 +208,53 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
           >
             {t("header.navMarketplace")}
           </NavLink>
-          <NavLink to="/comparison-alert" className={navClass}>
+          <NavLink
+            to="/comparison-alert"
+            className={navClass}
+            onClick={(e) => {
+              if (user) return;
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+            }}
+          >
             {t("header.navComparisonAlert")}
           </NavLink>
-          <NavLink to="/seller-analysis" className={navClass}>
+          <NavLink
+            to="/seller-analysis"
+            className={navClass}
+            onClick={(e) => {
+              if (user) return;
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+            }}
+          >
             {t("header.navSellerAnalysis")}
           </NavLink>
-          <NavLink to="/community" className={navClass}>
+          <NavLink
+            to="/community"
+            className={navClass}
+            onClick={(e) => {
+              if (user) return;
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+            }}
+          >
             {t("header.navCommunity")}
           </NavLink>
-          <NavLink to="/premium" className={navClass}>
+          {user?.is_admin ? (
+            <NavLink to="/admin" className={navClass}>
+              Admin
+            </NavLink>
+          ) : null}
+          <NavLink
+            to="/premium"
+            className={navClass}
+            onClick={(e) => {
+              if (user) return;
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+            }}
+          >
             {t("header.navPricing")}
           </NavLink>
         </nav>
@@ -315,28 +361,61 @@ const SiteHeader = forwardRef(function SiteHeader(_props, ref) {
               <NavLink
                 to="/comparison-alert"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+                  }
+                  setMenuOpen(false);
+                }}
               >
                 {t("header.navComparisonAlert")}
               </NavLink>
               <NavLink
                 to="/seller-analysis"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+                  }
+                  setMenuOpen(false);
+                }}
               >
                 {t("header.navSellerAnalysis")}
               </NavLink>
               <NavLink
                 to="/community"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+                  }
+                  setMenuOpen(false);
+                }}
               >
                 {t("header.navCommunity")}
               </NavLink>
+              {user?.is_admin ? (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Admin
+                </NavLink>
+              ) : null}
               <NavLink
                 to="/premium"
                 className={({ isActive }) => `site-header__drawer-link${isActive ? " is-active" : ""}`}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+                  }
+                  setMenuOpen(false);
+                }}
               >
                 {t("header.navPricing")}
               </NavLink>

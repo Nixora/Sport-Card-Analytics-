@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import AntdSpinDots from "./AntdSpinDots.jsx";
+import LoadingHubMark from "./LoadingHubMark.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import { fetchHumanStatus, verifyHumanToken } from "../api.js";
 
@@ -42,8 +43,10 @@ export default function HumanGate({ children }) {
   const { t } = useLanguage();
   const [phase, setPhase] = useState("loading");
   const [error, setError] = useState("");
+  const [verifying, setVerifying] = useState(false);
   const widgetHostRef = useRef(null);
   const widgetIdRef = useRef(null);
+  const host = typeof window !== "undefined" ? window.location.host : "";
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +81,7 @@ export default function HumanGate({ children }) {
     if (!host) return;
     let cancelled = false;
     widgetIdRef.current = null;
+    setVerifying(false);
 
     (async () => {
       try {
@@ -87,11 +91,13 @@ export default function HumanGate({ children }) {
           sitekey: SITE_KEY,
           callback: async (token) => {
             try {
+              setVerifying(true);
               await verifyHumanToken(token);
               setError("");
               setPhase("ok");
             } catch (err) {
               setError(err?.message || t("humanGate.verificationFailed"));
+              setVerifying(false);
               const wid = widgetIdRef.current;
               if (wid != null && window.turnstile) {
                 try {
@@ -104,6 +110,7 @@ export default function HumanGate({ children }) {
           },
           "error-callback": () => {
             setError(t("humanGate.verificationFailed"));
+            setVerifying(false);
           },
         });
         widgetIdRef.current = id;
@@ -147,7 +154,14 @@ export default function HumanGate({ children }) {
 
   return (
     <div className="human-gate human-gate--blocked">
-      <h1 className="human-gate__title">{t("humanGate.title")}</h1>
+      <p className="human-gate__kicker">{host || "Sports Card Analytics"}</p>
+      <h1 className="human-gate__title">
+        {phase === "challenge" || verifying ? <LoadingHubMark className="human-gate__title-mark" /> : null}
+        <span>Nixsora — Sports Card Analytics System</span>
+      </h1>
+      <p className="human-gate__hint">
+        Compare sports card prices across marketplaces, track trends, set alerts, and join the community — after a quick human verification.
+      </p>
       <p className="human-gate__hint">{t("humanGate.hint")}</p>
       {phase === "challenge" ? <div ref={widgetHostRef} className="human-gate__widget" /> : null}
       {error ? (
