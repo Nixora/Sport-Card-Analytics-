@@ -20,7 +20,7 @@ const Contact = lazy(() => import("./pages/Contact.jsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
 const Careers = lazy(() => import("./pages/Careers.jsx"));
-const Faq = lazy(() => import("./pages/Faq.jsx"));
+const Faq = lazy(() => import("./pages/FAQ.jsx"));
 const Product = lazy(() => import("./pages/Product.jsx"));
 
 function RedirectAnalyticsToCard() {
