@@ -17,9 +17,11 @@ const SellerProfile = lazy(() => import("./pages/SellerProfile.jsx"));
 const Profile = lazy(() => import("./pages/Profile.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
-const FAQ = lazy(() => import("./pages/FAQ.jsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
+const Careers = lazy(() => import("./pages/Careers.jsx"));
+const Faq = lazy(() => import("./pages/Faq.jsx"));
+const Product = lazy(() => import("./pages/Product.jsx"));
 
 function RedirectAnalyticsToCard() {
   const { cardKey } = useParams();
@@ -88,7 +90,7 @@ export default function App() {
     return () => ro.disconnect();
   }, []);
 
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const isHome = pathname === "/";
   const normalizedPath =
     pathname === "/cards" ? "/marketplace" : pathname;
@@ -132,9 +134,8 @@ export default function App() {
     normalizedPath === "/community/new" ||
     normalizedPath.startsWith("/community/");
   const privacyShellRoute =
-    normalizedPath === "/privacy-policy" ||
-    normalizedPath === "/contact" ||
-    normalizedPath === "/faq";
+    normalizedPath === "/privacy-policy" || normalizedPath === "/contact";
+  const docShellRoute = normalizedPath === "/product";
 
   // Signed-out users can access a small public set of pages.
   useEffect(() => {
@@ -145,18 +146,43 @@ export default function App() {
       pathname === "/marketplace" ||
       pathname === "/cards" ||
       pathname === "/contact" ||
-      pathname === "/privacy-policy";
+      pathname === "/privacy-policy" ||
+      pathname === "/careers" ||
+      pathname === "/faq" ||
+      pathname === "/product";
     if (allowed) return;
     window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
     navigate("/", { replace: true });
   }, [authLoading, user, pathname, navigate]);
+
+  // Ensure hash navigation (e.g. "/#faq") scrolls correctly in SPA routing.
+  useEffect(() => {
+    if (!hash) return;
+    const id = decodeURIComponent(hash.replace(/^#/, ""));
+    if (!id) return;
+
+    const tryScroll = () => {
+      const el = document.getElementById(id);
+      if (!el) return false;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return true;
+    };
+
+    // Scroll after the next paint so the target exists.
+    const raf = requestAnimationFrame(() => {
+      if (tryScroll()) return;
+      // Fallback: one short retry for slower mounts/lazy chunks.
+      window.setTimeout(tryScroll, 80);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [hash, pathname]);
 
   return (
     <div ref={layoutRef} className="layout">
       <SiteHeader ref={headerRef} />
       <main className={`site-main${isHome ? " site-main--home" : ""}`} id="main-content">
         <div
-          className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}${privacyShellRoute ? " content-shell--privacy" : ""}`}
+          className={`content-shell${marketplaceListRoute ? " content-shell--marketplace" : ""}${communityShellRoute ? " content-shell--community" : ""}${privacyShellRoute ? " content-shell--privacy" : ""}${docShellRoute ? " content-shell--doc" : ""}`}
         >
           {bodyPathItems ? <BreadcrumbNav items={bodyPathItems} /> : null}
           <Suspense fallback={<PageRouteFallback />}>
@@ -175,7 +201,9 @@ export default function App() {
               <Route path="/premium" element={<Premium />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<FAQ />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/faq" element={<Faq />} />
+              <Route path="/product" element={<Product />} />
               <Route path="/community/new" element={<CommunityNew />} />
               <Route path="/community/:articleId" element={<Community />} />
               <Route path="/community" element={<Community />} />

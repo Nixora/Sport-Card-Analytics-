@@ -11,19 +11,19 @@ import heroCardStock1 from "../assets/hero-card-01.jpg";
 import heroCardStock2 from "../assets/hero-card-02.jpg";
 import heroCardStock3 from "../assets/hero-card-03.jpg";
 import heroCardStill from "../assets/hero-sports-card-ref.png";
+import communityTeamImg from "../assets/community-team.jpg";
 import whyRealtimeImg from "../assets/why-realtime.png";
 import whyCompareImg from "../assets/why-compare.png";
 import whyAlertsImg from "../assets/why-alerts.png";
 import whyForecastImg from "../assets/why-forecast.png";
 import whyPortfolioImg from "../assets/why-portfolio.png";
+import LoadingHubMark from "../components/LoadingHubMark.jsx";
 import featureCompareImg from "../assets/features/feature-compare.jpg";
 import featureAnalyticsImg from "../assets/features/feature-analytics.jpg";
 import featureAlertsImg from "../assets/features/feature-alerts.jpg";
 import featureGradingImg from "../assets/features/feature-grading.jpg";
 import featureCommunityImg from "../assets/features/feature-community.jpg";
 import featureResearchImg from "../assets/features/feature-research.jpg";
-import featurePremiumImg from "../assets/features/feature-premium.jpg";
-import communityTeamImg from "../assets/community-team.jpg";
 
 const WHY_IMAGE_BY_ID = {
   realtime: whyRealtimeImg,
@@ -31,17 +31,6 @@ const WHY_IMAGE_BY_ID = {
   alerts: whyAlertsImg,
   forecast: whyForecastImg,
   portfolio: whyPortfolioImg,
-};
-
-const HUB_IMAGE_BY_TO = {
-  "/marketplace": featureCompareImg,
-  "/comparison-alert": featureAlertsImg,
-  "/seller-analysis": featureResearchImg,
-  "/premium": featurePremiumImg,
-  "/community": featureCommunityImg,
-  "/faq": featureAnalyticsImg,
-  "/privacy-policy": featureGradingImg,
-  "/contact": communityTeamImg,
 };
 
 const FEATURE_IMAGE_BY_ID = {
@@ -185,86 +174,6 @@ function MarketStateIcon({ name, className = "" }) {
 
 const WHY_CAROUSEL_AUTOPLAY_MS = 5500;
 
-function HubTileGlyph({ name }) {
-  const svgProps = {
-    width: 20,
-    height: 20,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg",
-    "aria-hidden": true,
-  };
-  const s = { stroke: "currentColor", strokeWidth: 1.65, strokeLinecap: "round", strokeLinejoin: "round" };
-
-  switch (name) {
-    case "marketplace":
-      return (
-        <svg {...svgProps}>
-          <path {...s} d="M4 7h16M4 12h10M4 17h8" />
-          <rect {...s} x="14" y="14" width="6" height="5" rx="1" />
-        </svg>
-      );
-    case "alerts":
-      return (
-        <svg {...svgProps}>
-          <path
-            {...s}
-            d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7M13.7 19a2 2 0 11-3.4 0"
-          />
-        </svg>
-      );
-    case "sellers":
-      return (
-        <svg {...svgProps}>
-          <path {...s} d="M4 19V5M4 12h4l3-8 4 14 3-8h6" />
-        </svg>
-      );
-    case "pricing":
-      return (
-        <svg {...svgProps}>
-          <path {...s} d="M7 7h10M7 12h6M7 17h10" />
-          <circle {...s} cx="17" cy="7" r="2" />
-        </svg>
-      );
-    case "community":
-      return (
-        <svg {...svgProps}>
-          <path {...s} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z" />
-          <path {...s} d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-        </svg>
-      );
-    case "faq":
-      return (
-        <svg {...svgProps}>
-          <circle {...s} cx="12" cy="12" r="9" />
-          <path {...s} d="M9.8 9.5a2.2 2.2 0 014 1.3c0 1.2-.8 1.8-1.5 2.5-.4.4-.5.8-.5 1.2V15M12 17h.01" />
-        </svg>
-      );
-    case "privacy":
-      return (
-        <svg {...svgProps}>
-          <path
-            {...s}
-            d="M12 3l7 4v5c0 5-3.5 9-7 10-3.5-1-7-5-7-10V7l7-4z"
-          />
-        </svg>
-      );
-    case "contact":
-      return (
-        <svg {...svgProps}>
-          <rect {...s} x="3" y="5" width="18" height="14" rx="2" />
-          <path {...s} d="M3 7l9 6 9-6" />
-        </svg>
-      );
-    default:
-      return (
-        <svg {...svgProps}>
-          <circle {...s} cx="12" cy="12" r="9" />
-        </svg>
-      );
-  }
-}
-
 /** Stock sports imagery (Unsplash License) + project assets; swap files in /assets anytime. */
 const HERO_FLOATING_CARDS = [
   { src: heroSportsSpread, objectPosition: "32% 44%", key: "spread" },
@@ -280,6 +189,10 @@ export default function Dashboard() {
   const [whySlide, setWhySlide] = useState(0);
   const [whyCarouselHover, setWhyCarouselHover] = useState(false);
   const [whyReduceMotion, setWhyReduceMotion] = useState(false);
+  const careersFallbacks = useMemo(
+    () => [communityTeamImg, heroCardStock2, heroSportsSpread],
+    [],
+  );
 
   const marketGrowthRows = tx("dashboard.MARKET_GROWTH_ROWS") ?? [];
   const marketChallengeRows = tx("dashboard.MARKET_CHALLENGE_ROWS") ?? [];
@@ -290,14 +203,6 @@ export default function Dashboard() {
     return rows
       .map((c) => ({ ...c, image: WHY_IMAGE_BY_ID[c.id] }))
       .filter((c) => c.image);
-  }, [tx, locale]);
-
-  const homeHubTiles = useMemo(() => {
-    const rows = tx("dashboard.HOME_HUB_TILES");
-    if (!Array.isArray(rows)) return [];
-    return rows
-      .map((tile) => ({ ...tile, image: HUB_IMAGE_BY_TO[tile.to] }))
-      .filter((tile) => tile.image);
   }, [tx, locale]);
 
   const featureCards = useMemo(() => {
@@ -542,7 +447,7 @@ export default function Dashboard() {
             </a>
           </div>
           <p className={`home-hero-sublink${heroHeadlineDone ? " home-hero-sublink--visible" : ""}`}>
-            <a href="#explore-nixsora">{t("dashboard.hero.exploreLink")}</a>
+            <a href="#about-us">{t("dashboard.hero.exploreLink")}</a>
           </p>
         </div>
         <HeroSourceImageFlow />
@@ -828,48 +733,369 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section id="explore-nixsora" className="home-hub" aria-labelledby="home-hub-heading">
-        <header className="home-hub__header">
-          <p className="home-hub__eyebrow">{t("dashboard.hubEyebrow")}</p>
-          <h2 id="home-hub-heading" className="home-hub__title">
-            {t("dashboard.hubTitle")}
+      <section id="about-us" className="home-about-split" aria-labelledby="home-about-split-heading">
+        <div className="home-about-split__label-row" aria-hidden>
+          <span className="home-about-split__label-text">About us</span>
+          <LoadingHubMark className="home-about-split__label-mark" />
+        </div>
+        <div className="home-about-split__inner">
+          <div className="home-about-split__copy">
+            <h2 id="home-about-split-heading" className="home-about-split__title">
+              We developed a Sports Card Analytics System
+            </h2>
+            <p className="home-about-split__lead">
+              Sports Card Analytics brings marketplace comparison, price movement tracking, and signal-style context into one clean workflow. Monitor supply and demand shifts, validate comps faster, and surface trend cues without bouncing between tabs or spreadsheets.
+            </p>
+
+            <div className="home-about-split__contact" aria-label="Contact information">
+              <div className="home-about-split__contact-item">
+                <span className="home-about-split__contact-ico" aria-hidden>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 22s7-4.4 7-11a7 7 0 10-14 0c0 6.6 7 11 7 11z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="12" cy="11" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                  </svg>
+                </span>
+                <address className="home-about-split__contact-v home-about-split__contact-address">
+                  1095 E. Salter Drive
+                  <br />
+                  Phoenix, AZ 85024
+                </address>
+              </div>
+              <div className="home-about-split__contact-item">
+                <span className="home-about-split__contact-ico" aria-hidden>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M6.6 10.8c1.6 3.2 3.4 5 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.6.6 3.9.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h2.9c.6 0 1 .4 1 1 0 1.3.2 2.7.6 3.9.1.4 0 .8-.3 1.1l-2.2 2.2z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <a className="home-about-split__contact-link home-about-split__contact-v" href="tel:+16025550197">
+                  +1 (602) 555-0197
+                </a>
+              </div>
+              <div className="home-about-split__contact-item">
+                <span className="home-about-split__contact-ico" aria-hidden>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M4 6h16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M22 8l-10 7L2 8"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <a className="home-about-split__contact-link home-about-split__contact-v" href="mailto:support@nixsora.com">
+                  support@nixsora.com
+                </a>
+              </div>
+              <div className="home-about-split__contact-item">
+                <span className="home-about-split__contact-ico" aria-hidden>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4v8z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <Link className="home-about-split__contact-link home-about-split__contact-v" to="/contact">
+                  Open contact page →
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="home-about-split__media" aria-hidden>
+            <img className="home-about-split__img" src={communityTeamImg} alt="" decoding="async" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
+      <section className="home-culture" aria-labelledby="home-culture-heading">
+        <header className="home-culture__head">
+          <p className="home-culture__eyebrow">Our company culture</p>
+          <h2 id="home-culture-heading" className="home-culture__brand">
+            NIXSORA
           </h2>
-          <p className="home-hub__lead muted">{t("dashboard.hubLead")}</p>
+          <p className="home-culture__subtitle">Our Core Values</p>
+          <p className="home-culture__lead">
+            These values shape our way of working and guide every decision we make as we build smarter analytics for the sports card community.
+          </p>
         </header>
 
-        <ul className="home-hub__grid">
-          {homeHubTiles.map((tile) => (
-            <li key={tile.to} className="home-hub__tile-cell">
-              <Link to={tile.to} className="home-hub__tile">
-                <div className="home-hub__tile-media">
-                  <img
-                    className="home-hub__tile-img"
-                    src={tile.image}
-                    alt=""
-                    width={400}
-                    height={225}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span className="home-hub__tile-glyph" aria-hidden>
-                    <HubTileGlyph name={tile.glyph} />
-                  </span>
-                </div>
-                <div className="home-hub__tile-body">
-                  <h3 className="home-hub__tile-title">{tile.title}</h3>
-                  <p className="home-hub__tile-blurb">{tile.blurb}</p>
-                  <span className="home-hub__tile-cta">
-                    {t("dashboard.hubOpen")}
-                    <span className="home-hub__tile-chev" aria-hidden>
-                      ›
-                    </span>
-                  </span>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="home-culture__grid" role="list">
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z" stroke="currentColor" strokeWidth="1.8" />
+                <path d="M9 12l2 2 4-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="home-culture__letter">N</div>
+            <h3 className="home-culture__title">Navigating Insightfully</h3>
+            <p className="home-culture__body">
+              We turn complex market data into clear, actionable insights—so decisions feel confident, not confusing.
+            </p>
+          </article>
+
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12c.6.5 1 1.2 1 2h6c0-.8.4-1.5 1-2A7 7 0 0012 2z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div className="home-culture__letter">I</div>
+            <h3 className="home-culture__title">Innovation First</h3>
+            <p className="home-culture__body">
+              We continuously improve and evolve—building smarter tools that stay ahead of market shifts.
+            </p>
+          </article>
+
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M4 5h16v12H4z" stroke="currentColor" strokeWidth="1.8" />
+                <path d="M8 21h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M9 9h6M9 12h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className="home-culture__letter">X</div>
+            <h3 className="home-culture__title">eXperience Matters</h3>
+            <p className="home-culture__body">
+              We design clean, intuitive workflows that reduce friction and simplify decision-making.
+            </p>
+          </article>
+
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3a9 9 0 109 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="home-culture__letter">S</div>
+            <h3 className="home-culture__title">Smart Efficiency</h3>
+            <p className="home-culture__body">
+              We streamline the process so you can compare, track, and act faster—without switching tools.
+            </p>
+          </article>
+
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l3 7 7 .6-5.3 5.1 1.5 7.3L12 18l-6.2 3.8 1.5-7.3L2 9.6 9 9l3-7z" stroke="currentColor" strokeWidth="1.8" />
+              </svg>
+            </div>
+            <div className="home-culture__letter">O</div>
+            <h3 className="home-culture__title">Outcome Driven</h3>
+            <p className="home-culture__body">
+              We focus on measurable impact—delivering insights that lead to better actions and results.
+            </p>
+          </article>
+
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z" stroke="currentColor" strokeWidth="1.8" />
+              </svg>
+            </div>
+            <div className="home-culture__letter">R</div>
+            <h3 className="home-culture__title">Reliability &amp; Trust</h3>
+            <p className="home-culture__body">
+              We prioritize accuracy and consistency—earning trust through dependable data and systems.
+            </p>
+          </article>
+
+          <article className="home-culture__card" role="listitem">
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M4 19V5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M4 19h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M8 15l3-3 3 2 4-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="home-culture__letter">A</div>
+            <h3 className="home-culture__title">Analytics with Purpose</h3>
+            <p className="home-culture__body">
+              We build signals that matter—helping the community make smarter, more informed moves.
+            </p>
+          </article>
+
+          <a
+            className="home-culture__card home-culture__card--opportunity"
+            role="listitem"
+            href="/careers"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Opportunity — open careers page in a new tab"
+          >
+            <div className="home-culture__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 21s7-4.4 7-11a7 7 0 10-14 0c0 6.6 7 11 7 11z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+                <path d="M10 11l1.6 1.6L15.5 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h3 className="home-culture__title">Opportunity</h3>
+            <p className="home-culture__body">
+              Choose your path: move fast on your own, or partner with our team to validate comps and build confidence.
+            </p>
+          </a>
+        </div>
       </section>
+
+      <section className="home-culture-work" aria-labelledby="home-culture-work-heading">
+        <div className="home-culture-work__copy">
+          <p className="home-culture-work__kicker">How we work</p>
+          <h2 id="home-culture-work-heading" className="home-culture-work__title">
+            A focused team that ships with clarity
+          </h2>
+          <ul className="home-culture-work__list">
+            <li>
+              <span className="home-culture-work__check" aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M8.5 12.2l2.2 2.2 5.1-5.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              We prioritize signal over noise—data that actually changes decisions.
+            </li>
+            <li>
+              <span className="home-culture-work__check" aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M8.5 12.2l2.2 2.2 5.1-5.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              We collaborate in small loops to move faster without breaking quality.
+            </li>
+            <li>
+              <span className="home-culture-work__check" aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M8.5 12.2l2.2 2.2 5.1-5.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              We design for collectors first: fewer clicks, cleaner context, clearer outcomes.
+            </li>
+            <li>
+              <span className="home-culture-work__check" aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M8.5 12.2l2.2 2.2 5.1-5.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              We document assumptions so insights stay consistent across the product.
+            </li>
+            <li>
+              <span className="home-culture-work__check" aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M8.5 12.2l2.2 2.2 5.1-5.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              We care about trust: accuracy, reproducibility, and transparent sources.
+            </li>
+          </ul>
+        </div>
+
+        <div className="home-culture-work__media" aria-hidden>
+          <div className="home-culture-work__media-shell">
+            <img className="home-culture-work__img" src={communityTeamImg} alt="" decoding="async" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
+      <section className="home-careers-banner" aria-labelledby="home-careers-banner-heading">
+        <div className="home-careers-banner__content">
+          <p className="home-careers-banner__eyebrow">Careers</p>
+          <h2 id="home-careers-banner-heading" className="home-careers-banner__title">
+            Build with NIXSORA
+          </h2>
+          <p className="home-careers-banner__lead muted">
+            If you’re excited about sports card analytics, product design, and clean workflows—let’s talk.
+          </p>
+          <div className="home-careers-banner__ctas" aria-label="Careers actions">
+            <a
+              className="home-about__cta home-about__cta--primary"
+              href="/careers"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View careers →
+            </a>
+          </div>
+        </div>
+
+        <div className="home-careers-banner__media" aria-hidden>
+          <div className="home-careers-banner__media-grid">
+            <img
+              className="home-careers-banner__media-img"
+              src="/careers/DSC07538.webp"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={(ev) => {
+                ev.currentTarget.onerror = null;
+                ev.currentTarget.src = careersFallbacks[0];
+              }}
+            />
+            <img
+              className="home-careers-banner__media-img"
+              src="/careers/DSC07577.webp"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={(ev) => {
+                ev.currentTarget.onerror = null;
+                ev.currentTarget.src = careersFallbacks[1];
+              }}
+            />
+            <img
+              className="home-careers-banner__media-img"
+              src="/careers/DSC07642.webp"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={(ev) => {
+                ev.currentTarget.onerror = null;
+                ev.currentTarget.src = careersFallbacks[2];
+              }}
+            />
+          </div>
+          <svg className="home-careers-banner__wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+              d="M0,40 C180,80 360,80 600,40 C840,0 1020,0 1200,40 L1200,120 L0,120 Z"
+              fill="rgba(8, 28, 48, 0.92)"
+            />
+          </svg>
+        </div>
+      </section>
+
       <CookieConsentBanner />
     </>
   );

@@ -19,6 +19,7 @@ const {
 const { router: authRouter, requireUser, optionalUser } = require("./auth");
 const community = require("../services/community");
 const { router: adminRouter } = require("./admin");
+const { sendSupportContactEmail } = require("../services/emailResend");
 
 const router = express.Router();
 
@@ -112,6 +113,53 @@ router.get("/meta", (_req, res) => {
     disclaimer: config.disclaimerAskingSample,
     cardSortOptions: Object.keys(SORT_API),
   });
+});
+
+router.post("/contact", async (req, res, next) => {
+  try {
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim();
+    const topic = String(req.body?.topic || "").trim();
+    const message = String(req.body?.message || "").trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Please enter a valid email address." });
+    }
+    if (!topic) {
+      return res.status(400).json({ error: "Please choose a topic." });
+    }
+    if (!message) {
+      return res.status(400).json({ error: "Please enter a message." });
+    }
+    if (message.length > 8000) {
+      return res.status(400).json({ error: "Message is too long." });
+    }
+
+    const supportInbox = "support@nixsora.com";
+    const subject = `[Nixsora contact] ${topic}`;
+    const messageText = [
+      `From: ${name || "(not provided)"}`,
+      `Email: ${email}`,
+      `Topic: ${topic}`,
+      "",
+      message,
+    ].join("\n");
+
+    await sendSupportContactEmail({
+      to: supportInbox,
+      subject,
+      messageText,
+      meta: {
+        ip: req.ip,
+        userAgent: req.get("user-agent") || "",
+        path: req.originalUrl,
+      },
+    });
+
+    return res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
 });
 
 router.get("/coverage", async (_req, res, next) => {

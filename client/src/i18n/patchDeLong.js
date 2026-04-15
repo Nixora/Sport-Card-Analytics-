@@ -168,7 +168,7 @@ export const patchDeLong = {
       sub: "Marktplätze vergleichen, Trends lesen und mit Daten entscheiden — nicht raten.",
       getStarted: "Loslegen",
       learnMore: "Mehr erfahren",
-      exploreLink: "Alle Bereiche der App entdecken ↓",
+      exploreLink: "Über uns ↓",
     },
     marketStateTitle: "Aktueller Markt für Sports Cards",
     marketStateLead:
@@ -196,12 +196,79 @@ export const patchDeLong = {
     featuresPlatformKicker: "Plattform",
     featuresPhotoCreditPrefix: "Stockfotos von",
     featuresPhotoCreditSuffix: ".",
+    aboutEyebrow: "Über uns",
+    aboutTitle: "Für Sammler gebaut, die Klarheit wollen",
+    aboutLead:
+      "Nixsora hilft Ihnen, Listings zu vergleichen, Preisbewegungen einzuordnen und Ihre Sammlung mit weniger Rauschen zu tracken.",
+    aboutCtaCommunity: "Zur Community",
+    aboutCtaContact: "Kontakt",
+    ABOUT_COMPANY_STATS: [
+      { label: "Firma", value: "Nixsora" },
+      { label: "Produkt", value: "Sports Card Analytics" },
+      { label: "Fokus", value: "Marktvergleich + Portfolio-Analysen" },
+      { label: "E-Mail", value: "support@nixsora.com" },
+    ],
+    aboutMissionKicker: "Unsere Mission",
+    aboutMissionTitle: "Sammlern helfen, mit Daten sicher zu entscheiden.",
+    aboutMissionBody:
+      "Wir bauen Tools, die fragmentierte Listings in nutzbare Insights verwandeln — damit Sie Märkte vergleichen, Zustand & Grading berücksichtigen und Ihre Sammlung ohne Tab-Chaos tracken.",
+    aboutMissionBody2:
+      "Egal ob erstes Grading oder ernsthaftes Portfolio: Unser Ziel bleibt gleich — die nächste Entscheidung schneller, einfacher und besser begründbar zu machen.",
+    aboutQuoteText: "Sammeln ist emotional. Entscheidungen müssen es nicht sein.",
+    aboutQuoteBy: "Das Nixsora-Team",
+    aboutImageAlt: "Vorschau eines Analytics-Dashboards mit Chart und Kennzahlen.",
+    aboutImageCaption: "Ein klarerer Blick auf Bewegung, Comps und Momentum — ohne Rauschen.",
+    aboutDiffsKicker: "Unterscheidungsmerkmale",
+    aboutDiffsTitle: "Für echte Hobby-Workflows gebaut",
+    ABOUT_DIFFS: [
+      {
+        title: "Vergleich an einem Ort",
+        body: "Comps und Marktplatz-Kontext zusammenführen — schneller und fundierter entscheiden.",
+      },
+      {
+        title: "Signal statt Rauschen",
+        body: "Fokus auf das, was Entscheidungen bewegt: Preis, Timing, Zustand, Grading und Nachfrage-Kontext.",
+      },
+      {
+        title: "Mit der Community iterieren",
+        body: "Wir bauen mit Sammlern — Feedback und schnelle Iteration halten das Produkt nah am Verhalten.",
+      },
+    ],
+    aboutValuesKicker: "Unsere Kultur",
+    aboutValuesTitle: "Werte, die unsere Arbeit prägen",
+    ABOUT_VALUES: [
+      { word: "OFFEN", def: "Wir teilen Wissen, begrüßen Feedback und bleiben neugierig." },
+      { word: "PRAGMATISCH", def: "Wir liefern Verbesserungen, die Workflows schnell besser machen." },
+      { word: "ENGAGIERT", def: "Wir sind für Nutzer und Team da — und ziehen es durch." },
+      { word: "VERBUNDEN", def: "Wir lieben das Hobby und gutes Handwerk beim Bauen." },
+      { word: "PROAKTIV", def: "Wir übernehmen Verantwortung und halten Momentum." },
+    ],
+    aboutTeamKicker: "Unser Team",
+    aboutTeamTitle: "Remote-first, sammler-first",
+    aboutTeamBody:
+      "Wir sind ein verteiltes Team und bauen gemeinsam mit der Community. Remote hilft, starke Talente überall zu gewinnen — und nah an echten Sammler-Workflows zu bleiben.",
+    aboutTeamCountriesAria: "Team-Standorte",
+    ABOUT_TEAM_COUNTRIES: ["Deutschland", "Frankreich", "UK", "Spanien", "USA", "Nepal", "Kenia", "Rumänien"],
     hubEyebrow: "Gesamte Plattform",
     hubTitle: "Jeden Bereich von Nixsora erkunden",
     hubLead:
       "Oben steht das „Warum“. Unten die Karte zu Marktplatz, Tools, Plänen, Community, Hilfe und Richtlinien — direkt einsteigen.",
     hubOpen: "Öffnen",
     premiumFootnoteBefore: "Steuern können anfallen. Team-Preise mit Vertrieb. Fragen? ",
+    ABOUT_POINTS: [
+      {
+        title: "Wir verbinden Kontext",
+        body: "Comps, Trends und Marktplatz-Kontext an einem Ort — Entscheidungen ohne Tab-Chaos.",
+      },
+      {
+        title: "Wir achten auf Details",
+        body: "Grading, Zustand und Timing zählen. Der Flow ist für echtes Sammeln und Investieren gebaut.",
+      },
+      {
+        title: "Wir bauen mit dem Hobby",
+        body: "Feedback, Community, Iteration — damit das Produkt mit echten Workflows wächst.",
+      },
+    ],
     MARKET_GROWTH_ROWS: [
       {
         icon: "investors",
@@ -284,7 +351,7 @@ export const patchDeLong = {
       { to: "/seller-analysis", title: "Verkäuferanalyse", blurb: "Aktivität und Muster von Verkäufern einordnen.", glyph: "sellers" },
       { to: "/premium", title: "Preise", blurb: "Starter, Pro und Team vergleichen — Billing folgt.", glyph: "pricing" },
       { to: "/community", title: "Community", blurb: "Artikel, Threads und Recherche mit anderen Sammlern.", glyph: "community" },
-      { to: "/faq", title: "FAQ", blurb: "Antworten zu Daten, Alarmen, Konto und Hilfe.", glyph: "faq" },
+      { to: "/#faq", title: "FAQ", blurb: "Antworten zu Daten, Alarmen, Konto und Hilfe.", glyph: "faq" },
       { to: "/privacy-policy", title: "Datenschutz", blurb: "Wie Nixsora mit personenbezogenen Daten umgeht.", glyph: "privacy" },
       { to: "/contact", title: "Kontakt", blurb: "Team per E-Mail oder Formular erreichen.", glyph: "contact" },
     ],

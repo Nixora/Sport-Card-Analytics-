@@ -276,7 +276,7 @@ export const en = {
     responseEnd: ".",
     formTitle: "Send us a message",
     formSub:
-      "Submitting opens your email app with a draft to {{email}}. You can edit the message before sending.",
+      "Send a message to our support inbox. We typically reply within one to two business days.",
     labelName: "Your name",
     labelEmail: "Your email",
     labelTopic: "Topic",
@@ -285,9 +285,9 @@ export const en = {
     phEmail: "you@example.com",
     phMessage: "Tell us what you need help with…",
     topicPlaceholder: "Choose a topic",
-    submitBtn: "Open in email app",
+    submitBtn: "Send message",
     successMail:
-      "If your mail program did not open, email us directly at ",
+      "Message sent. Thanks — our support team will review it and reply to your email address.",
     formNeedMessage: "Please enter a message.",
     formNeedEmail: "Please enter a valid email address so we can reply.",
     formNeedTopic: "Please choose a topic.",
@@ -363,60 +363,105 @@ export const en = {
       {
         id: "marketplace",
         title: "Marketplace & search",
+        summary:
+          "How Nixsora builds card pages, what “marketplace” means, and how to search + compare sources effectively.",
         items: [
           {
             q: "What is the marketplace?",
-            a: "The marketplace is where you browse cards from your ingested sample, compare asking prices across sources, and open detail pages for trends and filters. It is not a checkout cart — we surface analytics, not live checkout with sellers.",
+            a:
+              "The marketplace is Nixsora’s browsing and research layer. It aggregates your ingested listing sample into “card keys”, then lets you filter, compare, and open detail pages to understand what’s happening.\n\nIt is not a checkout cart and we don’t process payments. When you click a listing, you’ll be routed to the original marketplace page (for example, eBay) to complete the transaction. Think of Nixsora as the analytics workspace you use before you buy or sell.",
           },
           {
             q: "Why do prices differ from what I see on eBay or an auction house?",
-            a: "Listings change constantly. Nixsora reflects the data you have ingested and when it was last updated. Medians and samples depend on your query, filters, and ingest schedule — not real-time sold prices everywhere.",
+            a:
+              "Prices can differ for four common reasons:\n\n1) Timing: listings change constantly. Nixsora shows what was ingested at the last refresh.\n2) Ask vs sold: many views use asking prices; sold prices and auction results are a different signal.\n3) Filters: condition, grading keywords, and seller quality can change the median a lot.\n4) Normalization: “the same card” can be tricky (parallel sets, refractors, autograph variants, miscategorized listings). If a card key groups items too broadly, you’ll see extra variance.\n\nUse the detail page to check listing count, last seen time, and condition/grade signals before treating any metric as a comp.",
           },
           {
             q: "Can I compare the same card across multiple marketplaces?",
-            a: "Yes, that is the core idea. Use marketplace filters and comparison views where available. Coverage depends on which sources you have connected and how card keys are normalized in your setup.",
+            a:
+              "Yes—that’s the point. Nixsora is designed to reduce tab-switching by presenting comparable context in one place.\n\nPractical tips:\n- Start from a card detail page and use the source pills/links to jump to listings.\n- Keep condition and grade keywords consistent when you compare.\n- Treat low listing counts as “directional” rather than definitive.\n\nCoverage depends on which sources are enabled in your deployment and how your ingest normalizes the card key.",
+          },
+          {
+            q: "How should I search to get cleaner comps?",
+            a:
+              "Use fewer, higher-signal terms. Good searches typically include:\n- Player name\n- Set / year\n- Card number (if known)\n- Grade + company (e.g., PSA 10)\n\nAvoid packing the query with every possible keyword. Many listings contain marketing text (“INVEST”, “🔥”, etc.) which increases noise. After searching, tighten results using condition/grade filters and remove obvious outliers (wrong parallel, wrong sport, wrong year).",
+          },
+          {
+            q: "What does “Listings (N)” mean and why does it matter?",
+            a:
+              "Listings (N) is the size of the sample used for the view you’re looking at. Small samples can swing dramatically if a few listings are misclassified or priced unusually.\n\nAs a rule of thumb:\n- N < 10: treat as a hint, verify manually.\n- 10–30: useful directional signal.\n- 30+: more stable, especially when filtered by grade/condition.\n\nIf N is low, widen your query slightly or remove overly strict filters.",
           },
         ],
       },
       {
         id: "data",
         title: "Data & accuracy",
+        summary:
+          "What our metrics mean, how samples are computed, and how to interpret volatility without overtrusting a single number.",
         items: [
           {
             q: "Is this financial or investment advice?",
-            a: "No. Charts and alerts are informational. Card markets are volatile; always do your own research before buying or selling.",
+            a:
+              "No. Nixsora provides analytics and workflow tools. Sports card markets are volatile and can be illiquid; use multiple sources, sanity-check comps, and make your own decisions.",
           },
           {
             q: "What does “median ask” mean here?",
-            a: "Typically it is a median of asking prices from listings in your current sample, not a guaranteed fair market value (FMV) for sold cards. Wording on the product may vary as we refine labels.",
+            a:
+              "“Median ask” is the middle value of asking prices in the current listing sample (after filters are applied). It helps reduce the effect of extreme outliers compared to an average.\n\nImportant: median ask is not a guaranteed fair market value (FMV). It’s a snapshot of asks—what sellers want—not necessarily what buyers pay. Use it as a baseline and combine it with:\n- listing count (N)\n- last refresh time\n- grade/condition cues\n- spread across sources",
           },
           {
             q: "Are you affiliated with eBay or other marketplaces?",
             a: "No. Nixsora is independent. We may display data that originated from public listings according to your configuration, but we are not endorsed by those platforms unless stated otherwise.",
+          },
+          {
+            q: "How do you handle different grades (PSA/BGS/SGC) and raw cards?",
+            a:
+              "Grades create separate markets. A PSA 10 and a raw card should not be treated as the same comp.\n\nNixsora uses keywords in listing titles/metadata (depending on source) to infer grading signals. If a listing is missing grade info or is mislabeled, it can pollute the sample.\n\nBest practice: compare within the same grade/company first (e.g., PSA 9 vs PSA 10), then look at raw only as a separate bucket.",
+          },
+          {
+            q: "Why do I see big price swings on some cards?",
+            a:
+              "Large swings usually come from:\n- thin liquidity (low N)\n- news/player performance cycles\n- one or two overpriced listings entering/leaving the sample\n- mixed variants being grouped together\n\nWhen you see a spike, open the listing sample and check whether the underlying set changed (different parallel/auto) or the sample size dropped.",
           },
         ],
       },
       {
         id: "alerts",
         title: "Alerts & Premium",
+        summary:
+          "How alerts are triggered, what to expect from notifications, and how Premium tiers change depth, history, and workflow.",
         items: [
           {
             q: "How do price alerts work?",
-            a: "You configure thresholds or saved searches (where the product supports them). When new data matches your rules, we can notify you by email or in-app, depending on your plan and settings.",
+            a:
+              "Alerts watch for changes in the data you ingest. Depending on your deployment and plan, you can trigger notifications when:\n- a listing appears that matches a saved query\n- a price crosses a threshold\n- a spread between sources widens/narrows\n\nAlerts are only as fast as your ingest schedule. If ingestion runs every X minutes/hours, alerts will reflect that cadence—not tick-by-tick market movement.",
           },
           {
             q: "What is Premium?",
             a: "Premium is a planned tier with more alerts, history, and seats for teams. The Premium page shows placeholder plans until billing is connected.",
+          },
+          {
+            q: "How do I avoid noisy alerts?",
+            a:
+              "Start with tighter criteria and broaden later:\n- pick one card key and one grade bucket\n- set a buffer (e.g., alert at 10–15% change rather than 1–2%)\n- require minimum listing count (if available)\n\nNoisy alerts usually come from low N samples or mixed variants. Fix the query first, then tune thresholds.",
+          },
+          {
+            q: "Do alerts guarantee I can still buy the card?",
+            a:
+              "No. Alerts are informational. Listings can end, sell, or be edited between ingestion and when you click. Treat alerts as a prompt to investigate quickly—not a reservation.",
           },
         ],
       },
       {
         id: "account",
         title: "Account, privacy & support",
+        summary:
+          "Signing in, resetting access, privacy basics, and where to get help when something looks wrong.",
         items: [
           {
             q: "How do I change my profile or password?",
-            a: "Open Profile from the header when signed in. Use the edit flow there to update display name, tags, or avatar where supported. Password changes follow the same auth settings your deployment uses.",
+            a:
+              "When signed in, open Profile from the header. From there you can update your display name and other profile fields supported by your deployment.\n\nFor password resets, use the “Forgot password” flow on the sign-in modal. Reset links expire and are single-use for security.",
           },
           {
             q: "Where is your Privacy Policy?",
@@ -429,6 +474,11 @@ export const en = {
             aBefore: "Visit ",
             aLinkContact: "Contact",
             aAfter: " for email and the message form, or write to the support address shown there.",
+          },
+          {
+            q: "I think a card key is grouping the wrong listings. What should I do?",
+            a:
+              "This can happen with parallels, inserts, and mislabeled listings. Send us:\n- the card key you searched\n- 2–3 example listings that should be included\n- 2–3 listings that should not be included\n- the filters you used\n\nThat context lets us tighten normalization rules or recommend a cleaner query pattern for your workflow.",
           },
         ],
       },
@@ -516,7 +566,7 @@ export const en = {
       sub: "Compare marketplaces, read the trends, and decide with data—not guesswork.",
       getStarted: "Get Started",
       learnMore: "Learn More",
-      exploreLink: "Explore every area of the app ↓",
+      exploreLink: "About us ↓",
     },
     marketStateTitle: "Current sports card market state",
     marketStateLead:
@@ -544,12 +594,79 @@ export const en = {
     featuresPlatformKicker: "Platform",
     featuresPhotoCreditPrefix: "Stock photos from",
     featuresPhotoCreditSuffix: ".",
+    aboutEyebrow: "About",
+    aboutTitle: "Built for collectors who want clarity",
+    aboutLead:
+      "Nixsora helps you compare listings, understand price moves, and track your collection with less noise and more signal.",
+    aboutCtaCommunity: "Join the community",
+    aboutCtaContact: "Contact us",
+    ABOUT_COMPANY_STATS: [
+      { label: "Company", value: "Nixsora" },
+      { label: "Product", value: "Sports Card Analytics" },
+      { label: "Focus", value: "Market comparison + portfolio analytics" },
+      { label: "Email", value: "support@nixsora.com" },
+    ],
+    aboutMissionKicker: "Our mission",
+    aboutMissionTitle: "Help collectors make confident decisions with data.",
+    aboutMissionBody:
+      "We’re building tools that turn fragmented listings into usable insight—so you can compare markets, respect condition and grading, and track your collection without the tab overload.",
+    aboutMissionBody2:
+      "Whether you’re buying your first graded card or managing a serious portfolio, our goal is the same: make your next decision easier, faster, and more defensible.",
+    aboutQuoteText: "Collecting is emotional. Your decisions don’t have to be.",
+    aboutQuoteBy: "The Nixsora team",
+    aboutImageAlt: "Analytics dashboard preview with chart and metrics.",
+    aboutImageCaption: "A cleaner view of movement, comps, and momentum—without the noise.",
+    aboutDiffsKicker: "Key differentiators",
+    aboutDiffsTitle: "A product built for real hobby workflows",
+    ABOUT_DIFFS: [
+      {
+        title: "Single place to compare",
+        body: "Bring comps and marketplace context together so decisions are faster and better grounded.",
+      },
+      {
+        title: "Signal over noise",
+        body: "We focus on the few metrics that actually move decisions: price, timing, condition, grading, and demand context.",
+      },
+      {
+        title: "Community-informed iteration",
+        body: "We build with collectors—feedback loops and rapid iteration keep the product aligned with real behavior.",
+      },
+    ],
+    aboutValuesKicker: "Our company culture",
+    aboutValuesTitle: "Values that shape how we build",
+    ABOUT_VALUES: [
+      { word: "OPEN", def: "We share knowledge, welcome feedback, and stay curious." },
+      { word: "PRAGMATIC", def: "We ship improvements that make workflows better—fast." },
+      { word: "ENGAGED", def: "We show up for users and teammates, and we follow through." },
+      { word: "AFFINITY", def: "We care about the hobby and the craft of building great tools." },
+      { word: "PROACTIVE", def: "We take ownership and keep momentum." },
+    ],
+    aboutTeamKicker: "Our team",
+    aboutTeamTitle: "Remote-first, collector-first",
+    aboutTeamBody:
+      "We’re a distributed team building alongside the community. Remote lets us work with great people wherever they are—and stay close to how collectors operate day to day.",
+    aboutTeamCountriesAria: "Team locations",
+    ABOUT_TEAM_COUNTRIES: ["Germany", "France", "UK", "Spain", "USA", "Nepal", "Kenya", "Romania"],
     hubEyebrow: "Full platform",
     hubTitle: "Explore every part of Nixsora",
     hubLead:
       "The sections above explain the “why.” Below is the map to every area of the product — marketplace, tools, plans, community, help, and policies — so you can jump straight in.",
     hubOpen: "Open",
     premiumFootnoteBefore: "Taxes may apply. Team pricing is set with sales. Questions? ",
+    ABOUT_POINTS: [
+      {
+        title: "We connect the dots",
+        body: "We bring comps, trends, and marketplace context into one place so decisions don’t require 12 tabs.",
+      },
+      {
+        title: "We respect the details",
+        body: "Grading, condition, and timing matter. Our workflow is designed for real collecting and investing.",
+      },
+      {
+        title: "We’re building with the hobby",
+        body: "Feedback loops, community, and iteration—so the product keeps improving with how collectors actually operate.",
+      },
+    ],
     MARKET_GROWTH_ROWS: [
       {
         icon: "investors",

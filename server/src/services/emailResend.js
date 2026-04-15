@@ -69,8 +69,48 @@ async function sendPasswordResetLinkEmail(to, resetUrl) {
   return sendTransactional({ to, subject, html, text });
 }
 
+/**
+ * Sends a support contact email to the configured support inbox.
+ * @param {{ to: string, subject: string, messageText: string, meta?: Record<string, any> }} opts
+ */
+async function sendSupportContactEmail(opts) {
+  const to = String(opts?.to || "").trim();
+  const subject = String(opts?.subject || "").trim();
+  const messageText = String(opts?.messageText || "").trim();
+  if (!to || !subject || !messageText) {
+    const e = new Error("Missing contact email fields");
+    e.status = 400;
+    throw e;
+  }
+  const meta = opts?.meta && typeof opts.meta === "object" ? opts.meta : {};
+  const metaJson = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : "";
+  const text = [messageText, metaJson ? "\n---\nMeta:\n" + metaJson : ""].join("\n").trim();
+  const html = `
+    <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; line-height:1.5">
+      <p style="margin:0 0 12px; white-space:pre-wrap">${escapeHtml(messageText)}</p>
+      ${
+        metaJson
+          ? `<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0" />
+             <pre style="background:#0b1220;color:#e5e7eb;padding:12px;border-radius:10px;overflow:auto;white-space:pre-wrap">${escapeHtml(metaJson)}</pre>`
+          : ""
+      }
+    </div>
+  `.trim();
+  return sendTransactional({ to, subject, html, text });
+}
+
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 module.exports = {
   isEmailConfigured,
   sendSignupOtpEmail,
   sendPasswordResetLinkEmail,
+  sendSupportContactEmail,
 };

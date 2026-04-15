@@ -85,6 +85,16 @@ export function fetchCommunityArticle(id) {
   return getJson(`/api/community/articles/${encodeURIComponent(id)}`);
 }
 
+// ---- Contact (public) ----
+
+export function sendContactMessage(payload) {
+  return authFetch("/api/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 // ---- Admin ----
 
 export function fetchAdminUsers(params = {}) {

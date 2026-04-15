@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
+import { sendContactMessage } from "../api.js";
 import featureCommunityImg from "../assets/features/feature-community.jpg";
 
 const CONTACT_EMAILS = {
@@ -72,7 +73,8 @@ export default function Contact() {
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
-  const [mailOpened, setMailOpened] = useState(false);
+  const [sentOk, setSentOk] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const topicOptions = useMemo(
     () => TOPIC_KEYS.map((key) => ({ value: key, label: t(`contact.topics.${key}`) })),
@@ -80,10 +82,10 @@ export default function Contact() {
   );
 
   const onSubmit = useCallback(
-    (e) => {
+    async (e) => {
       e.preventDefault();
       setFormError("");
-      setMailOpened(false);
+      setSentOk(false);
 
       const trimmedMsg = message.trim();
       if (!trimmedMsg) {
@@ -99,25 +101,21 @@ export default function Contact() {
         return;
       }
 
-      const topicLabel = t(`contact.topics.${topic}`);
-      const subject = `${t("contact.subjectPrefix")} ${topicLabel}`;
-      const body = [
-        t("contact.mailBodyName", {
-          name: name.trim() || t("contact.mailBodyNotProvided"),
-        }),
-        t("contact.mailBodyEmail", { email: email.trim() }),
-        t("contact.mailBodyTopic", { topic: topicLabel }),
-        "",
-        t("contact.mailBodyMessageHeader"),
-        trimmedMsg,
-        "",
-        "---",
-        t("contact.mailBodySentFrom"),
-      ].join("\n");
-
-      const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailto;
-      setMailOpened(true);
+      setSending(true);
+      try {
+        await sendContactMessage({
+          name: name.trim(),
+          email: email.trim(),
+          topic: t(`contact.topics.${topic}`),
+          message: trimmedMsg,
+        });
+        setSentOk(true);
+        setMessage("");
+      } catch (err) {
+        setFormError(String(err?.message || t("auth.errGeneric")));
+      } finally {
+        setSending(false);
+      }
     },
     [name, email, topic, message, t],
   );
@@ -328,19 +326,15 @@ export default function Contact() {
                     {formError}
                   </p>
                 ) : null}
-                {mailOpened && !formError ? (
+                {sentOk && !formError ? (
                   <p className="contact-page__form-success" role="status">
                     {t("contact.successMail")}
-                    <a className="contact-page__inline-link" href={`mailto:${SUPPORT_EMAIL}`}>
-                      {SUPPORT_EMAIL}
-                    </a>
-                    .
                   </p>
                 ) : null}
 
                 <div className="contact-page__form-actions">
-                  <button type="submit" className="contact-page__submit">
-                    {t("contact.submitBtn")}
+                  <button type="submit" className="contact-page__submit" disabled={sending}>
+                    {sending ? t("auth.wait") : t("contact.submitBtn")}
                   </button>
                 </div>
               </form>

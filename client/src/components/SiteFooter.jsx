@@ -57,14 +57,14 @@ export default function SiteFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link className="site-footer__link" to="/">
+                  <Link className="site-footer__link" to={{ pathname: "/", hash: "about-us" }}>
                     {t("footer.about")}
                   </Link>
                 </li>
                 <li>
-                  <a className="site-footer__link" href="#careers">
+                  <Link className="site-footer__link" to="/careers">
                     {t("footer.careers")}
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <Link className="site-footer__link" to="/premium">
