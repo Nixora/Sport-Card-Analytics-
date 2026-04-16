@@ -123,6 +123,16 @@ const resendFromLine = (() => {
   return normalizeEnvString(line);
 })();
 
+/**
+ * Optional override for contact-form email From line.
+ * Must be a full `Name <email@domain.tld>` or bare email.
+ */
+const contactResendFromLine = (() => {
+  const fromFull = normalizeEnvString(req("CONTACT_RESEND_FROM", ""));
+  if (!fromFull) return "";
+  return isValidResendFromLine(fromFull) ? fromFull : "";
+})();
+
 const adminEmails = splitList(req("ADMIN_EMAILS", "")).map((s) => s.toLowerCase());
 
 module.exports = {
@@ -157,6 +167,7 @@ module.exports = {
   usersCollection: req("MONGODB_USERS_COLLECTION", "app_users"),
   pendingSignupsCollection: req("MONGODB_PENDING_SIGNUPS_COLLECTION", "app_pending_signups"),
   communityArticlesCollection: req("MONGODB_COMMUNITY_COLLECTION", "app_community_articles"),
+  jobApplicationsCollection: req("MONGODB_JOB_APPLICATIONS_COLLECTION", "app_job_applications"),
   /** HS256 secret for auth cookies; required when NODE_ENV=production */
   authJwtSecret: req("AUTH_JWT_SECRET", ""),
   authCookieName: req("AUTH_COOKIE_NAME", "nixsor_auth"),
@@ -166,6 +177,14 @@ module.exports = {
   resendApiKey: req("RESEND_API_KEY", ""),
   /** Full From header value for Resend, e.g. `Nixsora <no-reply@nixsora.com>` */
   resendFromLine,
+  /** Optional override From line for contact emails */
+  contactResendFromLine,
+  /** Inbox address for contact form messages */
+  supportInboxEmail: req("SUPPORT_INBOX_EMAIL", "support@nixsora.com"),
+  /** Telegram Bot API token used for contact form notifications */
+  telegramBotToken: req("TELEGRAM_BOT_TOKEN", ""),
+  /** Telegram chat id for contact form notifications */
+  telegramContactChatId: req("TELEGRAM_CONTACT_CHAT_ID", ""),
   /** Comma/newline separated list of admin user emails (lowercased). */
   adminEmails,
   appPublicName: req("APP_PUBLIC_NAME", "Nixsora"),

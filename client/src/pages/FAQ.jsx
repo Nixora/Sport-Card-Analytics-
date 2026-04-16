@@ -92,7 +92,7 @@ export default function Faq() {
         <h1 className="faq-doc__title">
           {t("faq.title")}
           <Link className="faq-doc__read-more" to="/product">
-            Read more →
+            {t("faq.readMore")} →
           </Link>
         </h1>
         <p className="faq-doc__lede">{t("faq.lede")}</p>
@@ -102,14 +102,14 @@ export default function Faq() {
         <main className="faq-doc__main">
           <section className="faq-doc__topics" aria-labelledby="faq-topics-heading">
             <h2 id="faq-topics-heading" className="faq-doc__h2">
-              Topics
+              {t("faq.topicsTitle")}
             </h2>
-            <div className="faq-doc__table-wrap" role="region" aria-label="FAQ topics">
+            <div className="faq-doc__table-wrap" role="region" aria-label={t("faq.topicsAria")}>
               <table className="faq-doc__table">
                 <thead>
                   <tr>
-                    <th scope="col">Topic</th>
-                    <th scope="col">Content</th>
+                    <th scope="col">{t("faq.topicsColTopic")}</th>
+                    <th scope="col">{t("faq.topicsColContent")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -174,8 +174,8 @@ export default function Faq() {
 
         <aside className="faq-doc__aside" aria-label="On this page">
           <div className="faq-doc__aside-card">
-            <h2 className="faq-doc__aside-title">On this page</h2>
-            <nav className="faq-doc__aside-nav" aria-label="On this page">
+            <h2 className="faq-doc__aside-title">{t("faq.onThisPage")}</h2>
+            <nav className="faq-doc__aside-nav" aria-label={t("faq.onThisPage")}>
               <ul className="faq-doc__aside-list">
                 {onThisPage.map((s) => (
                   <li key={`otp-${s.id}`} className="faq-doc__aside-li">

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+import { sendDocChatMessage } from "../api.js";
 
-function IconChat() {
+function IconChatBubble() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M5 3h14a2 2 0 012 2v9a2 2 0 01-2 2h-5l-4 3v-3H5a2 2 0 01-2-2V5a2 2 0 012-2z"
+        d="M5 4h14a2 2 0 012 2v9a2 2 0 01-2 2h-6l-4 3v-3H5a2 2 0 01-2-2V6a2 2 0 012-2z"
         stroke="currentColor"
         strokeWidth="1.75"
         strokeLinejoin="round"
@@ -38,10 +40,62 @@ function IconPlay() {
 }
 
 export default function SiteFooter() {
-  const { t } = useLanguage();
+  const { user } = useAuth();
+  const { t, locale } = useLanguage();
   const year = new Date().getFullYear();
-  const [chatVisible, setChatVisible] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const supportEmail = "support@nixsora.com";
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [messages, setMessages] = useState(() => []);
+
+  async function onSend(e) {
+    e?.preventDefault?.();
+    if (busy) return;
+    if (!user) {
+      window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+      return;
+    }
+    const msg = String(draft || "").trim();
+    if (!msg) return;
+
+    setChatError("");
+    setDraft("");
+    setBusy(true);
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: msg },
+    ]);
+
+    try {
+      const resp = await sendDocChatMessage({ message: msg, locale });
+      const answer = String(resp?.answer || "").trim();
+      const sources = Array.isArray(resp?.sources) ? resp.sources : [];
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: answer, sources },
+      ]);
+    } catch (err) {
+      const message = err?.message ? String(err.message) : String(err || "Chat failed");
+      setChatError(message);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: t("footer.chatErrorFallback"), sources: [] },
+      ]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openChat() {
+    if (!user) {
+      window.dispatchEvent(new CustomEvent("nix:open-auth", { detail: { mode: "signin" } }));
+      return;
+    }
+    setChatOpen(true);
+  }
 
   return (
     <>
@@ -153,29 +207,82 @@ export default function SiteFooter() {
         </div>
       </footer>
 
-      {chatVisible && (
-        <div className="footer-chat" role="complementary" aria-label={t("footer.chatAria")}>
-          <button
-            type="button"
-            className="footer-chat__close"
-            aria-label={t("footer.dismissChat")}
-            onClick={() => setChatVisible(false)}
-          >
-            <span aria-hidden>×</span>
-          </button>
-          <div className="footer-chat__row">
-            <p className="footer-chat__bubble">{t("footer.chatBubble")}</p>
-            <a
-              className="footer-chat__button"
-              href={`mailto:${supportEmail}`}
-              title={t("footer.getHelpTitle")}
-              aria-label={t("footer.getHelpEmail")}
-            >
-              <IconChat />
-            </a>
+      <div className="footer-chatbox" role="complementary" aria-label={t("footer.chatAria")}>
+        {chatOpen ? (
+          <div className="footer-chatbox__window" aria-label={t("footer.chatPanelAria")}>
+            <div className="footer-chatbox__header">
+              <div className="footer-chatbox__title">{t("footer.chatPanelAria")}</div>
+              <button
+                type="button"
+                className="footer-chatbox__min"
+                onClick={() => setChatOpen(false)}
+                aria-label={t("footer.dismissChat")}
+                title={t("footer.dismissChat")}
+              >
+                —
+              </button>
+            </div>
+
+            <div className="footer-chatbox__messages" role="log" aria-live="polite">
+              {messages.map((m, idx) => (
+                <div key={`${m.role}-${idx}`} className={`footer-chatbox__msg footer-chatbox__msg--${m.role}`}>
+                  <div className="footer-chatbox__msg-content">{m.content}</div>
+                  {m.role === "assistant" && Array.isArray(m.sources) && m.sources.length ? (
+                    <div className="footer-chatbox__sources">
+                      {t("footer.chatSourcesLabel")}:{" "}
+                      {m.sources
+                        .slice(0, 3)
+                        .map((s) => s?.title)
+                        .filter(Boolean)
+                        .join(", ")}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+
+            {chatError ? <div className="footer-chatbox__error">{t("footer.chatError")}</div> : null}
+
+            <form className="footer-chatbox__composer" onSubmit={onSend}>
+              <input
+                className="footer-chatbox__input"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder={t("footer.chatPlaceholder")}
+                aria-label={t("footer.chatInputAria")}
+                maxLength={1000}
+                disabled={busy}
+              />
+              <button
+                type="submit"
+                className="footer-chatbox__send"
+                disabled={busy || !String(draft || "").trim()}
+                aria-label={t("footer.chatSend")}
+                title={t("footer.chatSend")}
+              >
+                {busy ? t("footer.chatLoading") : "➤"}
+              </button>
+            </form>
+
+            <div className="footer-chatbox__fine">
+              <span>{t("footer.chatFinePrint")}</span>
+              <a className="footer-chatbox__fine-link" href={`mailto:${supportEmail}`}>
+                {supportEmail}
+              </a>
+            </div>
           </div>
-        </div>
-      )}
+        ) : null}
+
+        <button
+          type="button"
+          className="footer-chatbox__fab"
+          onClick={openChat}
+          aria-label={t("footer.chatPanelAria")}
+          title={t("footer.chatPanelAria")}
+        >
+          <IconChatBubble />
+        </button>
+      </div>
     </>
   );
 }

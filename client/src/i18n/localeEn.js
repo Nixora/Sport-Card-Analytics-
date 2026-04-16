@@ -80,6 +80,15 @@ export const en = {
     chatBubble: "Hi. Need any help?",
     getHelpEmail: "Get help by email",
     getHelpTitle: "Get help",
+    chatPanelAria: "Help chat",
+    chatPlaceholder: "Ask a question about the documentation…",
+    chatInputAria: "Chat message",
+    chatSend: "Send",
+    chatLoading: "Loading…",
+    chatSourcesLabel: "Sources",
+    chatError: "Chat error",
+    chatErrorFallback: "Sorry — I couldn’t process that request.",
+    chatFinePrint: "Prefer email? ",
   },
   auth: {
     errPasswordMismatch: "Passwords do not match",
@@ -352,6 +361,12 @@ export const en = {
       "Frequently asked questions about Nixsora — marketplace, data, alerts, Premium, and support.",
     title: "Frequently asked questions",
     lede: "Quick answers about the marketplace, how we show prices, alerts, and your account. For legal terms, use the Privacy Policy; for one-on-one help, use Contact.",
+    readMore: "Read more",
+    topicsTitle: "Topics",
+    topicsAria: "FAQ topics",
+    topicsColTopic: "Topic",
+    topicsColContent: "Content",
+    onThisPage: "On this page",
     jumpLabel: "FAQ sections",
     bannerText: "Stay ahead with alerts when your saved criteria match new listings.",
     heroAlt: "Marketplace comparison and card listings in Nixsora.",
@@ -483,6 +498,19 @@ export const en = {
         ],
       },
     ],
+  },
+  product: {
+    helmetDescription: "What Nixsora does and how to use the platform.",
+    contents: "Contents",
+    contentsNav: "Contents navigation",
+    docAria: "Documentation",
+    title: "Product documentation",
+    lede: "This page displays the complete user documentation inside the app.",
+    openFaq: "FAQ",
+    openFaqAria: "Open FAQ",
+    loading: "Loading documentation…",
+    loadFailed: "Failed to load documentation.",
+    jumpTo: "Jump to {{title}}",
   },
   privacy: {
     helmetDescription: "How Nixsora collects, uses, and protects your information.",
@@ -859,6 +887,265 @@ export const en = {
         cta: "Join community",
       },
     ],
+  },
+  careers: {
+    pageTitle: "Careers",
+    metaDescription: "Open roles at Nixsora — senior engineering and product technology for sports card analytics.",
+    intro:
+      "We’re building analytics, alerts, and community tools for collectors and sellers. Browse open roles and apply by email.",
+    listAria: "Job openings",
+    detailAria: "Selected job description",
+    selectJobHint: "Select a role to read the full description.",
+    labels: {
+      new: "New",
+      easilyApply: "Easily apply",
+      applyEmail: "Apply by email",
+      applyOnline: "Apply online",
+      jobDetails: "Job details",
+      pay: "Pay",
+      jobType: "Job type",
+      share: "Share job",
+      save: "Save job",
+      notInterested: "Not interested",
+      company: "Nixsora",
+      remoteUs: "Remote in United States",
+      remoteGlobal: "Remote",
+    },
+    jobTypes: {
+      fullTime: "Full-time",
+      contract: "Contract",
+    },
+    jobs: [
+      {
+        id: "senior-blockchain",
+        badge: "easy",
+        title: "Senior Blockchain Engineer",
+        companyKey: "company",
+        locationKey: "remoteGlobal",
+        salaryLine: "$150,000 – $190,000 a year",
+        jobTypeKey: "fullTime",
+        tags: ["Full-time", "EVM", "Remote", "Next-version roadmap"],
+        summary:
+          "Optional on-chain provenance and certificate NFTs that complement our core MERN app — without disrupting analytics.",
+        sections: [
+          {
+            heading: "About the role",
+            paragraphs: [
+              "This role focuses on the next-version roadmap: tamper-evident provenance timelines and optional certificate NFTs tied to a deterministic card identity. Core users keep email/password auth; wallet connect is only for minting or signing where needed.",
+              "Technically: provenance events live off-chain (structured data and attachments), while the chain commits to hashes or Merkle roots plus short pointers so history stays tamper-evident. Certificates are optional NFTs on an EVM network (ERC-721 or ERC-1155 where it fits), with rich metadata off-chain. We are not building a marketplace, payments, or a token economy, and we do not put heavy media or price history on-chain.",
+            ],
+          },
+          {
+            heading: "What you’ll do",
+            bullets: [
+              "Design canonical card identity (schema, normalization, stable hash) and how events anchor off-chain with on-chain commitments.",
+              "Implement or integrate smart contracts for minimal on-chain metadata and verification flows.",
+              "Work with backend engineers on APIs, indexing, and optional IPFS/Arweave metadata hosting.",
+              "Ensure blockchain features remain optional and never block core marketplace analytics.",
+            ],
+          },
+          {
+            heading: "What we’re looking for",
+            bullets: [
+              "5+ years software engineering with 2+ years shipping Solidity (or similar) to production.",
+              "Solid security mindset: reentrancy, access control, upgrade patterns, and key management.",
+              "Comfort collaborating with a traditional web stack (Node, MongoDB, React).",
+            ],
+          },
+        ],
+      },
+      {
+        id: "senior-fullstack",
+        badge: "easy",
+        title: "Senior Full-Stack Engineer",
+        companyKey: "company",
+        locationKey: "remoteUs",
+        salaryLine: "$140,000 – $175,000 a year",
+        jobTypeKey: "fullTime",
+        tags: ["Full-time", "Health insurance", "401(k) matching", "Flexible schedule", "Remote"],
+        summary:
+          "Lead features across our React client and Node API, from database design to polished UI, for marketplace and analytics.",
+        sections: [
+          {
+            heading: "About the role",
+            paragraphs: [
+              "You will own meaningful slices of the product end-to-end: data modeling, API design, performance, and user-facing flows. We ship iteratively, favor clear code over ceremony, and keep scope honest so analytics stay fast and reliable.",
+              "Our stack centers on a MERN-style architecture (MongoDB, Express, React). You will collaborate with design and stakeholders to turn ambiguous problems into shippable increments.",
+            ],
+          },
+          {
+            heading: "What you’ll do",
+            bullets: [
+              "Design and implement APIs and background jobs that power search, alerts, and dashboards.",
+              "Build responsive, accessible React features with attention to loading states and edge cases.",
+              "Improve observability, caching, and query patterns as data volume grows.",
+              "Review code, document decisions, and mentor other engineers informally.",
+            ],
+          },
+          {
+            heading: "What we’re looking for",
+            bullets: [
+              "5+ years shipping web applications; strong JavaScript/TypeScript and React.",
+              "Solid experience with Node.js and REST or GraphQL APIs; comfort with MongoDB or similar document stores.",
+              "Pragmatic testing habits and experience profiling slow endpoints or UI.",
+              "Clear written communication for async, remote-friendly collaboration.",
+            ],
+          },
+          {
+            heading: "Nice to have",
+            bullets: ["Sports cards or collectibles domain interest.", "Experience with search, queues, or ETL pipelines."],
+          },
+        ],
+      },
+      {
+        id: "senior-backend",
+        badge: "new",
+        title: "Senior Backend Engineer",
+        companyKey: "company",
+        locationKey: "remoteUs",
+        salaryLine: "$135,000 – $165,000 a year",
+        jobTypeKey: "fullTime",
+        tags: ["Full-time", "Dental insurance", "Paid time off", "Remote"],
+        summary:
+          "Deepen our data platform: ingestion, indexing, pricing aggregates, and APIs that stay correct under load.",
+        sections: [
+          {
+            heading: "About the role",
+            paragraphs: [
+              "Backend engineers here own the path from raw marketplace signals to trustworthy numbers in the product. You will harden pipelines, tighten contracts with the client, and make operational work visible.",
+            ],
+          },
+          {
+            heading: "What you’ll do",
+            bullets: [
+              "Model and query large listing datasets; optimize indexes and aggregation pipelines.",
+              "Implement reliable ingestion, deduplication, and scheduling with clear failure modes.",
+              "Partner with frontend engineers on pagination, filters, and real-time update semantics.",
+              "Participate in on-call rotation for production APIs as we mature practices.",
+            ],
+          },
+          {
+            heading: "What we’re looking for",
+            bullets: [
+              "5+ years backend development; strong Node.js or willingness to ramp quickly with comparable experience.",
+              "Experience with MongoDB or PostgreSQL at scale, including schema and index design.",
+              "Comfort reasoning about consistency, retries, idempotency, and backpressure.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "senior-frontend",
+        badge: null,
+        title: "Senior Frontend Engineer",
+        companyKey: "company",
+        locationKey: "remoteGlobal",
+        salaryLine: "$125,000 – $155,000 a year",
+        jobTypeKey: "fullTime",
+        tags: ["Full-time", "Vision insurance", "Professional development", "Remote"],
+        summary:
+          "Craft fast, intuitive experiences for research, alerts, and community — with strong accessibility and performance.",
+        sections: [
+          {
+            heading: "About the role",
+            paragraphs: [
+              "You will lead UI architecture for complex data-heavy screens: charts, tables, filters, and optimistic updates. We value cohesive design systems, predictable state, and measurable performance budgets.",
+            ],
+          },
+          {
+            heading: "What you’ll do",
+            bullets: [
+              "Implement and refine components, routing, and client-side data fetching patterns (e.g. React Query–style flows).",
+              "Collaborate on UX for empty states, errors, and slow networks.",
+              "Drive accessibility (WCAG-minded), keyboard flows, and semantic HTML.",
+              "Instrument and fix layout shifts, bundle size, and render hot paths.",
+            ],
+          },
+          {
+            heading: "What we’re looking for",
+            bullets: [
+              "5+ years with modern React; confident with hooks, composition, and performance debugging.",
+              "Experience with Vite or similar tooling and CSS at scale (modules or equivalent).",
+              "Eye for typography, spacing, and motion that matches product tone.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "staff-engineer",
+        badge: null,
+        title: "Staff Software Engineer",
+        companyKey: "company",
+        locationKey: "remoteUs",
+        salaryLine: "$170,000 – $205,000 a year",
+        jobTypeKey: "fullTime",
+        tags: ["Full-time", "Leadership track", "Equity discussion", "Remote"],
+        summary:
+          "Set technical direction across services and client, unblock teams, and raise the bar for reliability and delivery.",
+        sections: [
+          {
+            heading: "About the role",
+            paragraphs: [
+              "Staff engineers bridge product strategy and implementation. You will identify the highest-leverage investments, sequence work with realistic tradeoffs, and keep the codebase evolvable as the team grows.",
+            ],
+          },
+          {
+            heading: "What you’ll do",
+            bullets: [
+              "Lead design reviews for cross-cutting features (auth, billing, search, notifications).",
+              "Define standards for testing, deployment, and incident response.",
+              "Mentor senior engineers; align stakeholders on technical feasibility and risk.",
+              "Still ship code regularly — this is not a purely managerial track.",
+            ],
+          },
+          {
+            heading: "What we’re looking for",
+            bullets: [
+              "8+ years building production systems with evidence of growing scope and ownership.",
+              "Experience shaping architecture in a small-to-mid-size product organization.",
+              "Excellent judgment on when to simplify vs. when to invest in abstraction.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  jobApply: {
+    pageTitle: "Apply",
+    metaDescription: "Submit your application for an open role at Nixsora.",
+    backToCareers: "← Back to careers",
+    heading: "Application",
+    intro: "Fill in your details and upload your resume. PDF or Word, up to 5 MB. Phone and email formats are validated when you submit.",
+    jobLabel: "Role",
+    submit: "Submit application",
+    submitting: "Submitting…",
+    success: "Thank you — your application was received. We will contact you by email if there is a fit.",
+    resumeHint: "PDF, .doc, or .docx — max 5 MB",
+    socialHint: "At least one full URL (https://…). LinkedIn is the usual default.",
+    locationSearchHint: "Start typing to search places (streets, cities, regions). Pick a result or finish typing your location.",
+    locationSearchPoweredBy:
+      "Search uses OpenStreetMap data via Photon (Komoot) — no Google API key is required on your side.",
+    locSearching: "Searching places…",
+    fields: {
+      name: "Full name",
+      location: "Location",
+      phone: "Phone number",
+      email: "Email",
+      linkedin: "LinkedIn URL",
+      github: "GitHub URL (optional)",
+      twitter: "X (Twitter) URL (optional)",
+      resume: "Resume",
+    },
+    errInvalidJob: "This job is not listed. Return to careers and choose an open role.",
+    errGeneric: "Something went wrong. Please try again.",
+    errNeedResume: "Please attach your resume.",
+    errNeedSocial:
+      "Add at least one social or portfolio URL (https://…). If you only use LinkedIn, replace the sample path with your real profile.",
+    errNeedName: "Please enter your name.",
+    errNeedLocation: "Please enter your location (search and pick a place, or type your city / region).",
+    errEmailFormat: "That email does not look valid. Check the spelling and that it includes a domain (e.g. name@company.com).",
+    errPhoneFormat:
+      "That phone number does not look valid. Use digits only with an optional + at the beginning (8–15 digits total).",
   },
   cardDetail: {
     flags: {

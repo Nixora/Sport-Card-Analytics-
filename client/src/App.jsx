@@ -20,6 +20,7 @@ const Contact = lazy(() => import("./pages/Contact.jsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
 const Careers = lazy(() => import("./pages/Careers.jsx"));
+const JobApply = lazy(() => import("./pages/JobApply.jsx"));
 const Faq = lazy(() => import("./pages/FAQ.jsx"));
 const Product = lazy(() => import("./pages/Product.jsx"));
 
@@ -113,6 +114,10 @@ export default function App() {
       const tail = decodeURIComponent(normalizedPath.replace(/^\/community\//, ""));
       bodyPathItems.push({ label: "community", to: "/community" });
       bodyPathItems.push({ label: tail, to: `/community/${encodeURIComponent(tail)}` });
+    } else if (normalizedPath.startsWith("/careers/apply/")) {
+      const jid = decodeURIComponent(normalizedPath.replace(/^\/careers\/apply\//, ""));
+      bodyPathItems.push({ label: "careers", to: "/careers" });
+      bodyPathItems.push({ label: `apply / ${jid}`, to: normalizedPath });
     } else if (normalizedPath.startsWith("/u/")) {
       const slug = decodeURIComponent(normalizedPath.replace(/^\/u\//, ""));
       bodyPathItems.push({ label: "profile", to: "/profile" });
@@ -134,7 +139,10 @@ export default function App() {
     normalizedPath === "/community/new" ||
     normalizedPath.startsWith("/community/");
   const privacyShellRoute =
-    normalizedPath === "/privacy-policy" || normalizedPath === "/contact";
+    normalizedPath === "/privacy-policy" ||
+    normalizedPath === "/contact" ||
+    normalizedPath === "/careers" ||
+    normalizedPath.startsWith("/careers/");
   const docShellRoute = normalizedPath === "/product";
 
   // Signed-out users can access a small public set of pages.
@@ -148,6 +156,7 @@ export default function App() {
       pathname === "/contact" ||
       pathname === "/privacy-policy" ||
       pathname === "/careers" ||
+      pathname.startsWith("/careers/") ||
       pathname === "/faq" ||
       pathname === "/product";
     if (allowed) return;
@@ -201,6 +210,7 @@ export default function App() {
               <Route path="/premium" element={<Premium />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/careers/apply/:jobId" element={<JobApply />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/faq" element={<Faq />} />
               <Route path="/product" element={<Product />} />

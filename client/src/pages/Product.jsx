@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import PageHelmet from "../components/PageHelmet.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function slugify(s) {
   return String(s || "")
@@ -161,28 +162,45 @@ function parseMarkdown(md) {
 }
 
 export default function Product() {
+  const { locale, t } = useLanguage();
   const [md, setMd] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     let alive = true;
-    fetch("/user-documentation.md", { cache: "no-store" })
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed to load documentation (${r.status})`);
-        return r.text();
-      })
+
+    setMd("");
+    setError("");
+
+    const urlPrimary = locale && locale !== "en" ? `/user-documentation.${locale}.md` : "/user-documentation.md";
+    const urlFallback = "/user-documentation.md";
+
+    const load = async () => {
+      const tryFetch = async (url) => {
+        const r = await fetch(url, { cache: "no-store" });
+        if (!r.ok) return null;
+        return await r.text();
+      };
+      const primary = await tryFetch(urlPrimary);
+      if (primary != null) return primary;
+      const fallback = await tryFetch(urlFallback);
+      if (fallback != null) return fallback;
+      throw new Error(t("product.loadFailed"));
+    };
+
+    load()
       .then((text) => {
         if (!alive) return;
         setMd(text);
       })
       .catch((e) => {
         if (!alive) return;
-        setError(e?.message || "Failed to load documentation.");
+        setError(e?.message || t("product.loadFailed"));
       });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [locale, t]);
 
   const blocks = useMemo(() => parseMarkdown(md), [md]);
   const toc = useMemo(() => {
@@ -206,7 +224,7 @@ export default function Product() {
       } else {
         // If a doc starts with H3, bucket it under a synthetic section.
         if (!current) {
-          current = { id: "contents", text: "Contents", children: [] };
+          current = { id: "contents", text: t("product.contents"), children: [] };
           sections.push(current);
         }
         current.children.push({ id, text: b.text });
@@ -214,7 +232,7 @@ export default function Product() {
     }
 
     return sections;
-  }, [blocks]);
+  }, [blocks, t]);
 
   const [openIds, setOpenIds] = useState(() => new Set());
 
@@ -225,13 +243,13 @@ export default function Product() {
 
   return (
     <div className="product-page">
-      <PageHelmet breadcrumb="product" description="What Nixsora does and how to use the platform." />
+      <PageHelmet breadcrumb="product" description={t("product.helmetDescription")} />
 
       <div className="product-doc product-doc--layout">
-        <aside className="product-doc__aside" aria-label="Contents">
+        <aside className="product-doc__aside" aria-label={t("product.contents")}>
           <div className="product-doc__aside-inner">
-            <div className="product-doc__aside-title">Contents</div>
-            <nav className="product-doc__toc" aria-label="Contents navigation">
+            <div className="product-doc__aside-title">{t("product.contents")}</div>
+            <nav className="product-doc__toc" aria-label={t("product.contentsNav")}>
               <ul className="product-doc__toc-list">
                 {toc.map((sec) => {
                   const isOpen = openIds.has(sec.id);
@@ -265,7 +283,11 @@ export default function Product() {
                           </a>
                         )}
                         {hasChildren ? (
-                          <a className="product-doc__toc-jump" href={`#${sec.id}`} aria-label={`Jump to ${sec.text}`}>
+                          <a
+                            className="product-doc__toc-jump"
+                            href={`#${sec.id}`}
+                            aria-label={t("product.jumpTo", { title: sec.text })}
+                          >
                             ↗
                           </a>
                         ) : null}
@@ -290,21 +312,21 @@ export default function Product() {
           </div>
         </aside>
 
-        <main className="product-doc__main" aria-label="Documentation">
+        <main className="product-doc__main" aria-label={t("product.docAria")}>
           <header className="product-page__head">
             <h1 className="product-page__title">
-              Product documentation{" "}
-              <Link className="product-page__more" to="/faq" aria-label="Open FAQ">
-                FAQ →
+              {t("product.title")}{" "}
+              <Link className="product-page__more" to="/faq" aria-label={t("product.openFaqAria")}>
+                {t("product.openFaq")} →
               </Link>
             </h1>
             <p className="product-page__lede muted">
-              This page displays the complete user documentation inside the app.
+              {t("product.lede")}
             </p>
           </header>
 
           {error ? <p className="product-doc__error">{error}</p> : null}
-          {!error && !md ? <p className="product-doc__loading muted">Loading documentation…</p> : null}
+          {!error && !md ? <p className="product-doc__loading muted">{t("product.loading")}</p> : null}
 
           {(() => {
             const seen = new Map();

@@ -4,6 +4,7 @@ const config = require("../config");
 const { getDb } = require("../db");
 const { listCards } = require("../services/cards");
 const community = require("../services/community");
+const jobApplications = require("../services/jobApplications");
 
 const router = express.Router();
 
@@ -157,6 +158,44 @@ router.get("/community/articles", requireAdmin, async (req, res, next) => {
     const db = await getDb();
     const articles = await community.listArticleSummaries(db);
     res.json({ articles });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/job-applications", requireAdmin, async (req, res, next) => {
+  try {
+    const db = await getDb();
+    const body = await jobApplications.listJobApplications(db, {
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+    res.json(body);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/job-applications/:id/resume", requireAdmin, async (req, res, next) => {
+  try {
+    const oid = parseObjectId(req.params.id);
+    if (!oid) {
+      res.status(400).json({ error: "Invalid application id" });
+      return;
+    }
+    const db = await getDb();
+    const doc = await jobApplications.getJobApplicationWithResume(db, oid);
+    if (!doc || !doc.resume_data) {
+      res.status(404).json({ error: "Resume not found" });
+      return;
+    }
+    const rd = doc.resume_data;
+    const buf = Buffer.isBuffer(rd) ? rd : rd?.buffer != null ? Buffer.from(rd.buffer) : Buffer.from(rd);
+    const name = String(doc.resume_filename || "resume").replace(/[^\w.\-]+/g, "_");
+    res.setHeader("Content-Type", doc.resume_content_type || "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="${name}"`);
+    res.setHeader("Cache-Control", "private, no-store");
+    res.send(buf);
   } catch (e) {
     next(e);
   }

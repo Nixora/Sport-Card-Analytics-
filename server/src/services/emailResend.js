@@ -19,12 +19,12 @@ function normalizeFromHeader(s) {
 }
 
 /**
- * @param {{ to: string, subject: string, html: string, text: string }} opts
+ * @param {{ to: string, subject: string, html: string, text: string, replyTo?: string, from?: string }} opts
  */
 async function sendTransactional(opts) {
-  const { to, subject, html, text } = opts;
+  const { to, subject, html, text, replyTo, from: fromOverride } = opts;
   const client = resendClient();
-  const from = normalizeFromHeader(config.resendFromLine);
+  const from = normalizeFromHeader(fromOverride || config.resendFromLine);
 
   if (!client || !from) {
     if (config.nodeEnv !== "production") {
@@ -43,6 +43,7 @@ async function sendTransactional(opts) {
     subject,
     html,
     text,
+    replyTo: replyTo ? [replyTo] : undefined,
   });
 
   if (error) {
@@ -71,12 +72,13 @@ async function sendPasswordResetLinkEmail(to, resetUrl) {
 
 /**
  * Sends a support contact email to the configured support inbox.
- * @param {{ to: string, subject: string, messageText: string, meta?: Record<string, any> }} opts
+ * @param {{ to: string, subject: string, messageText: string, replyTo?: string, meta?: Record<string, any> }} opts
  */
 async function sendSupportContactEmail(opts) {
   const to = String(opts?.to || "").trim();
   const subject = String(opts?.subject || "").trim();
   const messageText = String(opts?.messageText || "").trim();
+  const replyTo = String(opts?.replyTo || "").trim();
   if (!to || !subject || !messageText) {
     const e = new Error("Missing contact email fields");
     e.status = 400;
@@ -96,7 +98,8 @@ async function sendSupportContactEmail(opts) {
       }
     </div>
   `.trim();
-  return sendTransactional({ to, subject, html, text });
+  const from = normalizeFromHeader(config.contactResendFromLine || "");
+  return sendTransactional({ to, subject, html, text, replyTo, from: from || undefined });
 }
 
 function escapeHtml(s) {

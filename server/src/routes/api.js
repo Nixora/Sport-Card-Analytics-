@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 const config = require("../config");
 const { getDb } = require("../db");
 const { getCoverage } = require("../services/coverage");
@@ -19,9 +20,24 @@ const {
 const { router: authRouter, requireUser, optionalUser } = require("./auth");
 const community = require("../services/community");
 const { router: adminRouter } = require("./admin");
-const { sendSupportContactEmail } = require("../services/emailResend");
+const { sendTelegramContactMessage } = require("../services/telegram");
+const { askDocChat } = require("../services/docChatRag");
+const jobApplications = require("../services/jobApplications");
+const jobApplyValidation = require("../services/jobApplyValidation");
 
 const router = express.Router();
+
+const uploadResume = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (jobApplications.ALLOWED_RESUME_MIME.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("INVALID_RESUME_TYPE"));
+    }
+  },
+});
 
 router.use("/auth", authRouter);
 // Admin endpoints (requires signed-in user + ADMIN_EMAILS match)
@@ -135,7 +151,6 @@ router.post("/contact", async (req, res, next) => {
       return res.status(400).json({ error: "Message is too long." });
     }
 
-    const supportInbox = "support@nixsora.com";
     const subject = `[Nixsora contact] ${topic}`;
     const messageText = [
       `From: ${name || "(not provided)"}`,
@@ -145,8 +160,7 @@ router.post("/contact", async (req, res, next) => {
       message,
     ].join("\n");
 
-    await sendSupportContactEmail({
-      to: supportInbox,
+    await sendTelegramContactMessage({
       subject,
       messageText,
       meta: {
@@ -157,6 +171,120 @@ router.post("/contact", async (req, res, next) => {
     });
 
     return res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+function handleResumeUpload(req, res, next) {
+  uploadResume.single("resume")(req, res, (err) => {
+    if (!err) {
+      next();
+      return;
+    }
+    if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+      res.status(400).json({ error: "Resume file is too large (max 5 MB)." });
+      return;
+    }
+    if (String(err.message || "") === "INVALID_RESUME_TYPE") {
+      res.status(400).json({ error: "Resume must be PDF or Word (.doc, .docx)." });
+      return;
+    }
+    next(err);
+  });
+}
+
+router.post("/job-applications", handleResumeUpload, async (req, res, next) => {
+  try {
+    const file = req.file;
+    if (!file || !file.buffer) {
+      res.status(400).json({ error: "Please attach a resume (PDF or Word)." });
+      return;
+    }
+
+    const job_id = jobApplications.normalizeJobId(req.body?.job_id);
+    if (!job_id || !jobApplications.isAllowedCareerJobId(job_id)) {
+      res.status(400).json({ error: "Invalid job." });
+      return;
+    }
+
+    const job_title = String(req.body?.job_title || "").trim().slice(0, 200);
+    const name = String(req.body?.name || "").trim();
+    const location = String(req.body?.location || "").trim();
+    const phone = String(req.body?.phone || "").trim();
+    const email = String(req.body?.email || "").trim();
+    const social_linkedin = String(req.body?.social_linkedin || "").trim();
+    const social_github = String(req.body?.social_github || "").trim();
+    const social_x = String(req.body?.social_x || "").trim();
+
+    if (!name || name.length < 2) {
+      res.status(400).json({ error: "Please enter your name." });
+      return;
+    }
+    if (!location) {
+      res.status(400).json({ error: "Please enter your location (city / region)." });
+      return;
+    }
+    if (!jobApplyValidation.isValidJobApplyPhone(phone)) {
+      res.status(400).json({
+        error:
+          "Please enter a valid phone number (digits only with optional +, spaces, or parentheses; 8–15 digits).",
+      });
+      return;
+    }
+    const emailNorm = jobApplyValidation.normalizeJobApplyEmail(email);
+    if (!jobApplyValidation.isValidJobApplyEmail(emailNorm)) {
+      res.status(400).json({ error: "Please enter a valid email address." });
+      return;
+    }
+    if (!jobApplications.hasAtLeastOneSocial(social_linkedin, social_github, social_x)) {
+      res.status(400).json({
+        error: "Add at least one social profile URL (https://…), for example LinkedIn.",
+      });
+      return;
+    }
+
+    const db = await getDb();
+    await jobApplications.insertJobApplication(db, {
+      job_id,
+      job_title: job_title || job_id,
+      name,
+      location,
+      phone,
+      email: emailNorm,
+      social_linkedin,
+      social_github,
+      social_x,
+      resumeBuffer: file.buffer,
+      resumeFilename: file.originalname || "resume",
+      resumeContentType: file.mimetype,
+      ip: req.ip,
+      user_agent: req.get("user-agent") || "",
+    });
+
+    res.status(201).json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/doc-chat", requireUser, async (req, res, next) => {
+  try {
+    const message = String(req.body?.message || "").trim();
+    const locale = String(req.body?.locale || "en").trim();
+
+    if (!message) {
+      return res.status(400).json({ error: "Please enter a message." });
+    }
+    if (message.length > 2000) {
+      return res.status(400).json({ error: "Message is too long." });
+    }
+
+    const { answer, sources } = await askDocChat({ message, locale });
+    return res.json({
+      answer,
+      sources: Array.isArray(sources) ? sources : [],
+    });
   } catch (e) {
     next(e);
   }

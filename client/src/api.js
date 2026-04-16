@@ -1,3 +1,5 @@
+import { formatPhotonSuggestion } from "./utils/photonLocation.js";
+
 const BASE = import.meta.env.VITE_API_URL || "";
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -41,6 +43,24 @@ async function getJson(path) {
 
 export function fetchMeta() {
   return getJson("/api/meta");
+}
+
+const PHOTON_API = "https://photon.komoot.io/api/";
+
+/** Place search (OpenStreetMap via Photon). No API key. @param {AbortSignal} [signal] */
+export async function fetchLocationSuggestions(query, signal) {
+  const q = String(query || "").trim();
+  if (q.length < 2) return [];
+  const r = await fetch(`${PHOTON_API}?q=${encodeURIComponent(q)}&limit=8&lang=en`, {
+    signal,
+    headers: { Accept: "application/json" },
+  });
+  if (!r.ok) return [];
+  const data = await r.json();
+  const list = (data.features || [])
+    .map((f) => formatPhotonSuggestion(f))
+    .filter(Boolean);
+  return list;
 }
 
 export function fetchCoverage() {
@@ -95,6 +115,42 @@ export function sendContactMessage(payload) {
   });
 }
 
+const JOB_APP_TIMEOUT_MS = 90_000;
+
+/** Public multipart application (cookies included for human-check when enabled). */
+export async function submitJobApplication(formData) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), JOB_APP_TIMEOUT_MS);
+  try {
+    const r = await fetch(`${BASE}/api/job-applications`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+      signal: controller.signal,
+    });
+    const text = await r.text();
+    let body = null;
+    if (text) {
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = { error: text };
+      }
+    }
+    if (!r.ok) {
+      throw new Error(formatApiError(body, r));
+    }
+    return body;
+  } catch (e) {
+    if (e?.name === "AbortError") {
+      throw new Error(`Request timeout after ${JOB_APP_TIMEOUT_MS / 1000}s.`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ---- Admin ----
 
 export function fetchAdminUsers(params = {}) {
@@ -117,6 +173,47 @@ export function deleteAdminCard(cardKey) {
 
 export function fetchAdminCommunityArticles() {
   return authFetch("/api/admin/community/articles");
+}
+
+export function fetchAdminJobApplications(params = {}) {
+  const q = new URLSearchParams(params).toString();
+  return authFetch(`/api/admin/job-applications?${q}`);
+}
+
+/** Binary resume file for an application (admin only). */
+export async function fetchAdminJobApplicationResumeBlob(applicationId) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AUTH_TIMEOUT_MS);
+  try {
+    const r = await fetch(
+      `${BASE}/api/admin/job-applications/${encodeURIComponent(applicationId)}/resume`,
+      {
+        method: "GET",
+        credentials: "include",
+        signal: controller.signal,
+      }
+    );
+    if (!r.ok) {
+      const text = await r.text();
+      let body = null;
+      if (text) {
+        try {
+          body = JSON.parse(text);
+        } catch {
+          body = { error: text };
+        }
+      }
+      throw new Error(formatApiError(body, r));
+    }
+    return r.blob();
+  } catch (e) {
+    if (e?.name === "AbortError") {
+      throw new Error(`Request timeout after ${AUTH_TIMEOUT_MS / 1000}s.`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function deleteAdminCommunityArticle(articleId) {
@@ -382,4 +479,13 @@ export async function uploadProfileAvatar(file) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// ---- Doc chat (public) ----
+export function sendDocChatMessage(payload) {
+  return authFetch("/api/doc-chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
+  });
 }

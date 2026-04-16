@@ -8,6 +8,8 @@ import {
   deleteAdminUser,
   fetchAdminCards,
   fetchAdminCommunityArticles,
+  fetchAdminJobApplications,
+  fetchAdminJobApplicationResumeBlob,
   fetchAdminUsers,
 } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -43,7 +45,7 @@ export default function Admin() {
   const { user, loading: authLoading } = useAuth();
   const isAdmin = Boolean(user?.is_admin);
 
-  const [tab, setTab] = useState("users"); // users | cards | community
+  const [tab, setTab] = useState("users"); // users | cards | community | applications
 
   // Users
   const [userQ, setUserQ] = useState("");
@@ -62,6 +64,12 @@ export default function Admin() {
   const [commData, setCommData] = useState(null);
   const [commErr, setCommErr] = useState("");
   const [commBusyId, setCommBusyId] = useState("");
+
+  // Job applications
+  const [appsPage, setAppsPage] = useState(1);
+  const [appsData, setAppsData] = useState(null);
+  const [appsErr, setAppsErr] = useState("");
+  const [appsBusyId, setAppsBusyId] = useState("");
 
   const canLoad = !authLoading && isAdmin;
 
@@ -116,6 +124,23 @@ export default function Admin() {
     };
   }, [canLoad, tab]);
 
+  useEffect(() => {
+    if (!canLoad || tab !== "applications") return;
+    let cancelled = false;
+    setAppsErr("");
+    (async () => {
+      try {
+        const body = await fetchAdminJobApplications({ page: String(appsPage), limit: "50" });
+        if (!cancelled) setAppsData(body);
+      } catch (e) {
+        if (!cancelled) setAppsErr(e?.message || "Could not load applications");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [canLoad, tab, appsPage]);
+
   const usersTotalPages = useMemo(() => {
     const total = usersData?.total || 0;
     const limit = usersData?.limit || 50;
@@ -127,6 +152,12 @@ export default function Admin() {
     const limit = cardsData?.limit || 50;
     return Math.max(1, Math.ceil(total / limit));
   }, [cardsData]);
+
+  const appsTotalPages = useMemo(() => {
+    const total = appsData?.total || 0;
+    const limit = appsData?.limit || 50;
+    return Math.max(1, Math.ceil(total / limit));
+  }, [appsData]);
 
   if (authLoading) {
     return (
@@ -203,6 +234,15 @@ export default function Admin() {
           aria-selected={tab === "community"}
         >
           Community
+        </button>
+        <button
+          type="button"
+          className={`admin-page__tab${tab === "applications" ? " is-active" : ""}`}
+          onClick={() => setTab("applications")}
+          role="tab"
+          aria-selected={tab === "applications"}
+        >
+          Job applications
         </button>
       </div>
 
@@ -399,6 +439,153 @@ export default function Admin() {
                   className="admin-page__btn"
                   onClick={() => setCardsPage((p) => Math.min(cardsTotalPages, p + 1))}
                   disabled={cardsPage >= cardsTotalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : null}
+
+      {tab === "applications" ? (
+        <div className="panel admin-page__panel">
+          <div className="admin-page__panel-head">
+            <h2 className="admin-page__h">Job applications</h2>
+          </div>
+          {appsErr ? <p className="err">{appsErr}</p> : null}
+          {!appsData ? (
+            <DataLoading variant="section" />
+          ) : (
+            <>
+              <div className="admin-table-wrap admin-table-wrap--wide">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Submitted</th>
+                      <th>Job</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Location</th>
+                      <th>More</th>
+                      <th>Resume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(appsData.items || []).map((row) => (
+                      <tr key={row.id}>
+                        <td className="admin-table__mono">{fmtDate(row.created_at)}</td>
+                        <td>
+                          <div className="admin-page__stack">
+                            <span className="admin-table__mono">{row.job_id}</span>
+                            <span className="muted admin-page__small">{row.job_title}</span>
+                          </div>
+                        </td>
+                        <td>{row.name || "—"}</td>
+                        <td className="admin-table__mono">{row.email || "—"}</td>
+                        <td className="admin-table__mono">{row.phone || "—"}</td>
+                        <td>{row.location || "—"}</td>
+                        <td>
+                          <details className="admin-page__inline-details">
+                            <summary className="admin-page__inline-details-sum">View</summary>
+                            <dl className="admin-page__app-dl">
+                              {row.social_linkedin ? (
+                                <>
+                                  <dt>LinkedIn</dt>
+                                  <dd>
+                                    <a href={row.social_linkedin} target="_blank" rel="noopener noreferrer">
+                                      {row.social_linkedin}
+                                    </a>
+                                  </dd>
+                                </>
+                              ) : null}
+                              {row.social_github ? (
+                                <>
+                                  <dt>GitHub</dt>
+                                  <dd>
+                                    <a href={row.social_github} target="_blank" rel="noopener noreferrer">
+                                      {row.social_github}
+                                    </a>
+                                  </dd>
+                                </>
+                              ) : null}
+                              {row.social_x ? (
+                                <>
+                                  <dt>X / Twitter</dt>
+                                  <dd>
+                                    <a href={row.social_x} target="_blank" rel="noopener noreferrer">
+                                      {row.social_x}
+                                    </a>
+                                  </dd>
+                                </>
+                              ) : null}
+                            </dl>
+                          </details>
+                        </td>
+                        <td>
+                          {row.has_resume ? (
+                            <button
+                              type="button"
+                              className="admin-page__btn"
+                              disabled={appsBusyId === row.id}
+                              onClick={async () => {
+                                setAppsBusyId(row.id);
+                                try {
+                                  const blob = await fetchAdminJobApplicationResumeBlob(row.id);
+                                  const name = row.resume_filename || "resume";
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = name;
+                                  a.rel = "noopener";
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  a.remove();
+                                  URL.revokeObjectURL(url);
+                                } catch (e) {
+                                  setAppsErr(e?.message || "Download failed");
+                                } finally {
+                                  setAppsBusyId("");
+                                }
+                              }}
+                            >
+                              {appsBusyId === row.id ? "Downloading…" : "Download"}
+                            </button>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {appsData.items?.length ? null : (
+                      <tr>
+                        <td colSpan={8} className="muted">
+                          No applications yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="admin-page__pager">
+                <button
+                  type="button"
+                  className="admin-page__btn"
+                  onClick={() => setAppsPage((p) => Math.max(1, p - 1))}
+                  disabled={appsPage <= 1}
+                >
+                  Prev
+                </button>
+                <span className="muted">
+                  Page {appsPage} / {appsTotalPages}
+                </span>
+                <button
+                  type="button"
+                  className="admin-page__btn"
+                  onClick={() => setAppsPage((p) => Math.min(appsTotalPages, p + 1))}
+                  disabled={appsPage >= appsTotalPages}
                 >
                   Next
                 </button>
