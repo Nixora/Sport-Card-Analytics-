@@ -4483,7 +4483,7 @@ button.site-header__drawer-link {
 .home-about-split__inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 0.9rem;
+  padding: 0 0.45rem;
   display: grid;
   gap: 1.4rem;
   align-items: center;
@@ -5150,15 +5150,13 @@ button.site-header__drawer-link {
 .home-about-split__img {
   display: block;
   width: 100%;
-  height: min(340px, 56vw);
-  object-fit: cover;
-  object-position: 50% 50%;
+  height: auto;
   filter: saturate(1.05) contrast(1.03);
 }
 
 @media (min-width: 860px) {
   .home-about-split__img {
-    height: 360px;
+    height: auto;
   }
 }
 
