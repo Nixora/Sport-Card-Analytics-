@@ -12,6 +12,8 @@ import heroCardStock2 from "../assets/hero-card-02.jpg";
 import heroCardStock3 from "../assets/hero-card-03.jpg";
 import heroCardStill from "../assets/hero-sports-card-ref.png";
 import communityTeamImg from "../assets/community-team.jpg";
+import cultureValuesImg from "../assets/nixsora-culture-values.png";
+import nixsoraOfficeImg from "../assets/nixsora-office.png";
 import whyRealtimeImg from "../assets/why-realtime.png";
 import whyCompareImg from "../assets/why-compare.png";
 import whyAlertsImg from "../assets/why-alerts.png";
@@ -821,7 +823,7 @@ export default function Dashboard() {
           </div>
 
           <div className="home-about-split__media" aria-hidden>
-            <img className="home-about-split__img" src={communityTeamImg} alt="" decoding="async" loading="lazy" />
+            <img className="home-about-split__img" src={nixsoraOfficeImg} alt="" decoding="async" loading="lazy" />
           </div>
         </div>
       </section>
@@ -1024,8 +1026,14 @@ export default function Dashboard() {
         </div>
 
         <div className="home-culture-work__media" aria-hidden>
-          <div className="home-culture-work__media-shell">
-            <img className="home-culture-work__img" src={communityTeamImg} alt="" decoding="async" loading="lazy" />
+          <div className="home-culture-work__media-shell home-culture-work__media-shell--flush">
+            <img
+              className="home-culture-work__img home-culture-work__img--infographic"
+              src={cultureValuesImg}
+              alt=""
+              decoding="async"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
@@ -1055,7 +1063,7 @@ export default function Dashboard() {
           <div className="home-careers-banner__media-grid">
             <img
               className="home-careers-banner__media-img"
-              src="/careers/DSC07538.webp"
+              src="/careers/career1.png"
               alt=""
               loading="lazy"
               decoding="async"
@@ -1066,7 +1074,7 @@ export default function Dashboard() {
             />
             <img
               className="home-careers-banner__media-img"
-              src="/careers/DSC07577.webp"
+              src="/careers/career2.png"
               alt=""
               loading="lazy"
               decoding="async"
@@ -1077,7 +1085,7 @@ export default function Dashboard() {
             />
             <img
               className="home-careers-banner__media-img"
-              src="/careers/DSC07642.webp"
+              src="/careers/career3.png"
               alt=""
               loading="lazy"
               decoding="async"

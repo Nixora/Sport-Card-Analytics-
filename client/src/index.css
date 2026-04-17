@@ -4813,6 +4813,11 @@ button.site-header__drawer-link {
   padding: 0.85rem;
 }
 
+.home-culture-work__media-shell--flush {
+  padding: 0;
+  background: rgba(7, 18, 32, 0.35);
+}
+
 .home-culture-work__img {
   display: block;
   width: 100%;
@@ -4822,9 +4827,22 @@ button.site-header__drawer-link {
   filter: saturate(1.06) contrast(1.04);
 }
 
+.home-culture-work__img--infographic {
+  height: auto;
+  min-height: 0;
+  object-fit: initial;
+  border-radius: 0;
+  background: transparent;
+  filter: none;
+}
+
 @media (min-width: 900px) {
   .home-culture-work__img {
     height: 310px;
+  }
+
+  .home-culture-work__img--infographic {
+    height: auto;
   }
 }
 
