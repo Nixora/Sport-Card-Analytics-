@@ -192,7 +192,7 @@ export default function Dashboard() {
   const [whyCarouselHover, setWhyCarouselHover] = useState(false);
   const [whyReduceMotion, setWhyReduceMotion] = useState(false);
   const careersFallbacks = useMemo(
-    () => [communityTeamImg, heroCardStock2, heroSportsSpread],
+    () => [communityTeamImg, heroCardStock2, heroSportsSpread, heroCardStock1, heroCardStock3],
     [],
   );
 
@@ -1063,7 +1063,7 @@ export default function Dashboard() {
           <div className="home-careers-banner__media-grid">
             <img
               className="home-careers-banner__media-img"
-              src="/careers/career1.png"
+              src="/careers/image_1.png"
               alt=""
               loading="lazy"
               decoding="async"
@@ -1074,7 +1074,7 @@ export default function Dashboard() {
             />
             <img
               className="home-careers-banner__media-img"
-              src="/careers/career2.png"
+              src="/careers/image_2.png"
               alt=""
               loading="lazy"
               decoding="async"
@@ -1085,13 +1085,35 @@ export default function Dashboard() {
             />
             <img
               className="home-careers-banner__media-img"
-              src="/careers/career3.png"
+              src="/careers/image_3.png"
               alt=""
               loading="lazy"
               decoding="async"
               onError={(ev) => {
                 ev.currentTarget.onerror = null;
                 ev.currentTarget.src = careersFallbacks[2];
+              }}
+            />
+            <img
+              className="home-careers-banner__media-img"
+              src="/careers/image_5.png"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={(ev) => {
+                ev.currentTarget.onerror = null;
+                ev.currentTarget.src = careersFallbacks[3];
+              }}
+            />
+            <img
+              className="home-careers-banner__media-img"
+              src="/careers/image_6.png"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={(ev) => {
+                ev.currentTarget.onerror = null;
+                ev.currentTarget.src = careersFallbacks[4];
               }}
             />
           </div>

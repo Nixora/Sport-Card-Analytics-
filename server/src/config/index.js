@@ -201,4 +201,12 @@ module.exports = {
     3600,
     parseInt(req("HUMAN_COOKIE_MAX_AGE_SEC", "604800"), 10) || 604800
   ),
+  /** When set, requests with matching `x-nixsora-bff-secret` skip human check (trusted Next BFF). */
+  mainBackendBffSecret: req("MAIN_BACKEND_BFF_SECRET", "").trim(),
+  /**
+   * If true, Turnstile is required even for public catalog GETs (/cards, /meta, …). Default false so
+   * marketplace + Next BFF can read data without a browser cookie.
+   */
+  humanCheckRequireForPublicReads:
+    req("HUMAN_CHECK_REQUIRE_FOR_PUBLIC_READS", "").toLowerCase() === "true",
 };

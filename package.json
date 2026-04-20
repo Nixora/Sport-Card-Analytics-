@@ -11,7 +11,10 @@
     "build:web": "npm run build --prefix client",
     "build": "npm run build:web",
     "start:prod": "cross-env NODE_ENV=production npm start --prefix server",
-    "prod:vps": "npm run build:web && cross-env NODE_ENV=production npm start --prefix server"
+    "prod:vps": "npm run build:web && cross-env NODE_ENV=production npm start --prefix server",
+    "dev:next": "npm run dev --prefix nixsora-next",
+    "build:next": "npm run build --prefix nixsora-next",
+    "start:next": "npm run start --prefix nixsora-next"
   },
   "devDependencies": {
     "cross-env": "^10.1.0"

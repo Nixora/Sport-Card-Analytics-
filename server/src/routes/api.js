@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const multer = require("multer");
 const config = require("../config");
 const { getDb } = require("../db");
@@ -128,6 +129,16 @@ router.get("/meta", (_req, res) => {
     searchQuery: config.ebaySearchQuery || null,
     disclaimer: config.disclaimerAskingSample,
     cardSortOptions: Object.keys(SORT_API),
+  });
+});
+
+/** Lightweight contract for the isolated `nixsora-next` BFF (no extra DB reads). */
+router.get("/integrations/nixsora-next/health", (_req, res) => {
+  res.json({
+    ok: true,
+    integration: "nixsora-next",
+    service: "sports-card-analytics-api",
+    ts: new Date().toISOString(),
   });
 });
 
@@ -337,6 +348,38 @@ router.get("/cards/:cardKey", async (req, res, next) => {
     const card = await getCardByKey(db, req.params.cardKey);
     if (!card) return res.status(404).json({ error: "Card not found" });
     res.json(card);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Append-only provenance ledger (events grow over time; each row links prev_hash). */
+function provenanceFingerprint(card) {
+  const payload = JSON.stringify({
+    card_key: card.card_key,
+    title: card.title,
+    first_seen_at: card.first_seen_at || null,
+    last_seen_at: card.last_seen_at || null,
+  });
+  return crypto.createHash("sha256").update(payload).digest("hex");
+}
+
+router.get("/cards/:cardKey/provenance", async (req, res, next) => {
+  try {
+    const { cardKey } = req.params;
+    const db = await getDb();
+    const card = await getCardByKey(db, cardKey);
+    if (!card) {
+      res.status(404).json({ error: "Card not found" });
+      return;
+    }
+    res.json({
+      card_key: card.card_key || cardKey,
+      fingerprint: provenanceFingerprint(card),
+      events: [],
+      ledger:
+        "Append-only ledger. New events include payload_hash and prev_hash so any tampering breaks the chain.",
+    });
   } catch (e) {
     next(e);
   }

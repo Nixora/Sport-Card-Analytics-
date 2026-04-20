@@ -1,15 +1,45 @@
-# Hiring spec — Blockchain Developer (Next Version)
+# Hiring spec — Blockchain Developer
 
-This document describes the **next version** blockchain work for **Nixsora — Sports Card Analytics**, focused on:
+**Handing off the `nixsora-next` repo for provenance UI, BFF routes, and wallet flows?** Use **[`hiring-nixsora-next-provenance.md`](./hiring-nixsora-next-provenance.md)** for the repo map, phase plan, take-home, and provenance-specific interview questions.
 
-- **Provenance** (tamper-evident event history for a card)
-- **NFT-based certificates** (optional, not required for basic app use)
-
-The current product is a MERN-style web app with an Express API, MongoDB, and a React client. Blockchain features must **not** disrupt core analytics features and must be built as **optional** enhancements.
+This document is the **long-horizon** spec: product intent, **CardIdentity**, contracts, NFT certificates, security, and deliverables—aligned with how the **main Nixsora app** and **`nixsora-next`** evolve together.
 
 ---
 
-## 1) Project goal (business / product)
+## 1) Main project today (Nixsora — Sports Card Analytics)
+
+**Nixsora** is a web product for **comparing sports-card listings across marketplaces**, with analytics, alerts, seller views, community, and accounts. In this repository, production today is a **MERN-style** stack: **Express** API (`/api`), **MongoDB**, and a **Vite + React** client (dev proxy to the API; production build served from `client/dist`).
+
+Blockchain work is **additive**. It must **not** disrupt core compare/analytics flows: ship behind **feature flags** or a **dedicated `/chain/*` area**, and degrade gracefully when RPC or chain features are unavailable.
+
+Alongside the legacy client, the team runs **`nixsora-next`**: a **Next.js 15 (App Router)** app that acts as a **BFF** to the same main backend (no ledger database inside Next). That app is where **chain-facing UX** and **provenance read paths** are concentrated today.
+
+---
+
+## 2) What you do with `nixsora-next` (and how it relates to this repo)
+
+You are not “only” a contracts author. You are expected to **coordinate** with the Next monolith so on-chain and off-chain designs match what users see and verify.
+
+**In `nixsora-next`, you will typically:**
+
+- Own or co-own **`/chain/provenance`**: timeline, empty states, hash copy, explorer links, and verification affordances as the API returns real `events` instead of placeholders.
+- Work with **BFF routes** (e.g. `GET /api/v1/cards/[cardKey]/provenance`) that **proxy** the main API—extend types and payloads **carefully** so the UI and auditors get a stable contract.
+- Align **wallet connect** (`/chain/wallets`, EIP-1193) with **when signing is actually required** (writes, mints, attestations)—not for every read.
+- Respect the **split of responsibility**: **authoritative event storage and integrity rules** live in the **Express + Mongo** service; Next does **not** become a second source of truth for ledger rows.
+
+**Practical detail** (routes, code paths, suggested phases): **[`hiring-nixsora-next-provenance.md`](./hiring-nixsora-next-provenance.md)**.
+
+---
+
+## 3) Provenance: a bit of context (today → target)
+
+**Today (baseline):** the main API can expose provenance read models such as `card_key`, a **`fingerprint`** (hash of a small catalog/snapshot JSON), **`events: []`**, and a short ledger description. The Next app surfaces that through its BFF—enough to ship UI skeletons, not yet a full tamper-evident story.
+
+**Target:** an **append-only, hash-linked** event log off-chain (`payload_hash`, `prev_hash`, ordered by append), with **optional on-chain anchors** (hashes or Merkle roots only—no heavy media on-chain), plus UI that lets a reviewer **recompute hashes** from returned payloads and see that tampering breaks the chain. NFT-based certificates remain **optional** and layered on top of that story—not a prerequisite for credible read-only provenance.
+
+---
+
+## 4) Project goal (business / product)
 
 Build trust and shareability for sports-card ownership and history by adding:
 
@@ -23,7 +53,7 @@ Non-goals for this phase:
 
 ---
 
-## 2) High-level feature scope
+## 5) High-level feature scope
 
 ### A) Provenance (on-chain + off-chain)
 - A card has a **stable identifier** (see “Card identity” below).
@@ -50,7 +80,7 @@ Non-goals for this phase:
 
 ---
 
-## 3) Card identity model (must be deterministic)
+## 6) Card identity model (must be deterministic)
 
 We need a deterministic way to refer to a specific card in blockchain terms.
 
@@ -73,7 +103,7 @@ The blockchain developer should propose:
 
 ---
 
-## 4) Chain + standards (preferences)
+## 7) Chain + standards (preferences)
 
 Preferred: **EVM-compatible** chain (best tooling ecosystem).
 
@@ -87,7 +117,7 @@ Token standard:
 
 ---
 
-## 5) Smart contract requirements
+## 8) Smart contract requirements
 
 ### A) ProvenanceRegistry contract
 Required functions (example interface; developer may propose better):
@@ -119,7 +149,7 @@ Security requirements:
 
 ---
 
-## 6) Off-chain backend responsibilities
+## 9) Off-chain backend responsibilities
 
 Backend tasks the blockchain developer will work with (or implement if full-stack):
 
@@ -132,9 +162,9 @@ Backend tasks the blockchain developer will work with (or implement if full-stac
 
 ---
 
-## 7) Frontend responsibilities
+## 10) Frontend responsibilities
 
-- Add an “Ownership / Provenance” panel on card detail (or a dedicated page).
+- Add an “Ownership / Provenance” panel on card detail (or a dedicated page)—in the **Vite client** and/or **`nixsora-next`** `/chain/*` surfaces, depending on where the feature ships first.
 - Wallet connect UI (optional workflow).
 - Mint certificate flow.
 - Display:
@@ -144,7 +174,7 @@ Backend tasks the blockchain developer will work with (or implement if full-stac
 
 ---
 
-## 8) Security + privacy constraints
+## 11) Security + privacy constraints
 
 - **Never store private user data on-chain.**
 - Treat on-chain records as permanent and public.
@@ -157,7 +187,7 @@ Backend tasks the blockchain developer will work with (or implement if full-stac
 
 ---
 
-## 9) Deliverables (what “done” means)
+## 12) Deliverables (what “done” means)
 
 1. Smart contracts (registry + certificate) with:
    - tests
@@ -171,7 +201,7 @@ Backend tasks the blockchain developer will work with (or implement if full-stac
 
 ---
 
-## 10) Required experience (candidate requirements)
+## 13) Required experience (candidate requirements)
 
 Must have:
 - Solidity + EVM experience
@@ -184,10 +214,11 @@ Nice to have:
 - Wallet UX experience (RainbowKit / wagmi / viem)
 - Indexing (The Graph) or event ingestion pipelines
 - Prior work with provenance / attestations
+- **Next.js App Router** + BFF patterns (especially if they will own `nixsora-next` workstreams)
 
 ---
 
-## 11) Interview questions (suggested)
+## 14) Interview questions (suggested)
 
 Architecture:
 - How would you model a provenance timeline so it’s cheap on-chain but verifiable?
@@ -204,10 +235,11 @@ Implementation:
 
 ---
 
-## 12) Notes for the developer
+## 15) Notes for the developer
 
 This is a **next version** feature. The primary constraint is to keep the current product stable:
 
 - blockchain features must be isolated behind a feature flag / separate UI section
 - if chain RPC is down, the app must still function (graceful degradation)
 
+**Doc split:** **[`hiring-nixsora-next-provenance.md`](./hiring-nixsora-next-provenance.md)** = hire who **starts in `nixsora-next`** and owns provenance UX + BFF coordination. **This file** = contracts, identity, hybrid architecture, NFTs, and long-term security expectations.
